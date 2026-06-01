@@ -22,6 +22,12 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
         }
 
+    @ExceptionHandler(UserNotFoundByEmailException.class)
+    public ResponseEntity<String> handleInvalidEmails(UserNotFoundByEmailException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+
     // Handles @Valid validation failures
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(

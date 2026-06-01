@@ -11,8 +11,8 @@ import java.util.List;
 @Service
 public interface UserService {
 
-    public UserResponse createUser(UserRequest userRequest);
-    public UserResponse getUserByEmail(String email);
-    public UserResponse getUserById(Long id);
+    UserResponse createUser(UserRequest userRequest);
+    UserResponse getUserByEmail(String email);
+    UserResponse getUserById(Long id);
     List<UserResponse> getAllUsers();
 }

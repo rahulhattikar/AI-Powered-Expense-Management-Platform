@@ -11,10 +11,9 @@ import com.AIExpense.ExpenseTracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +23,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public UserResponse  createUser(UserRequest userRequest){
         log.info("Creating user with email: {}", userRequest.email());
 
@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponse getUserByEmail(String email) {
 
         log.info("Fetching user with email: {}", email);
@@ -51,6 +52,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundByEmailException("User not found with email: " + email));
     }
     @Override
+    @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
 
         log.info("Fetching user with id: {}", id);
@@ -60,6 +62,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers(){
 
         log.info("Fetching all users");
