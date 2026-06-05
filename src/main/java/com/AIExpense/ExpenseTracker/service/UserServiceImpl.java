@@ -10,6 +10,7 @@ import com.AIExpense.ExpenseTracker.mapper.UserMapper;
 import com.AIExpense.ExpenseTracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,8 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -34,7 +37,7 @@ public class UserServiceImpl implements UserService {
        User user = User.builder()
                .name(userRequest.name())
                .email(userRequest.email())
-               .password(userRequest.password())
+               .password(passwordEncoder.encode(userRequest.password()))
                .build();
 
               User savedUser = userRepository.save(user);
