@@ -1,9 +1,8 @@
-package com.AIExpense.ExpenseTracker.service;
+package com.AIExpense.ExpenseTracker.user.service;
 
 
-import com.AIExpense.ExpenseTracker.dto.UserRequest;
-import com.AIExpense.ExpenseTracker.dto.UserResponse;
-import com.AIExpense.ExpenseTracker.exception.EmailAlreadyExistsException;
+import com.AIExpense.ExpenseTracker.user.dto.UserRequest;
+import com.AIExpense.ExpenseTracker.user.dto.UserResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

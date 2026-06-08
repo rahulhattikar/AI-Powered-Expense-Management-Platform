@@ -1,4 +1,4 @@
-package com.AIExpense.ExpenseTracker.dto;
+package com.AIExpense.ExpenseTracker.user.dto;
 
 public record UserResponse(
         Long id,

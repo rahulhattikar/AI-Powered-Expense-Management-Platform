@@ -1,6 +1,6 @@
-package com.AIExpense.ExpenseTracker.repository;
+package com.AIExpense.ExpenseTracker.user.repository;
 
-import com.AIExpense.ExpenseTracker.entity.User;
+import com.AIExpense.ExpenseTracker.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

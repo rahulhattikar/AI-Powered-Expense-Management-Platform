@@ -1,4 +1,4 @@
-package com.AIExpense.ExpenseTracker.exception;
+package com.AIExpense.ExpenseTracker.common.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

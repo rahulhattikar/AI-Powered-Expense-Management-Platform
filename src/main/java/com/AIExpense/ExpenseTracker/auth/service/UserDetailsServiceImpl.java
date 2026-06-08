@@ -1,7 +1,7 @@
 package com.AIExpense.ExpenseTracker.auth.service;
 
-import com.AIExpense.ExpenseTracker.exception.UserNotFoundException;
-import com.AIExpense.ExpenseTracker.repository.UserRepository;
+import com.AIExpense.ExpenseTracker.common.exception.UserNotFoundException;
+import com.AIExpense.ExpenseTracker.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

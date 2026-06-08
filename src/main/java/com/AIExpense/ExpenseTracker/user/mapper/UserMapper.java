@@ -1,7 +1,7 @@
-package com.AIExpense.ExpenseTracker.mapper;
+package com.AIExpense.ExpenseTracker.user.mapper;
 
-import com.AIExpense.ExpenseTracker.dto.UserResponse;
-import com.AIExpense.ExpenseTracker.entity.User;
+import com.AIExpense.ExpenseTracker.user.dto.UserResponse;
+import com.AIExpense.ExpenseTracker.user.entity.User;
 
 public class UserMapper {
         private UserMapper() {

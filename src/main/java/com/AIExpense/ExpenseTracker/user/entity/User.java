@@ -1,4 +1,4 @@
-package com.AIExpense.ExpenseTracker.entity;
+package com.AIExpense.ExpenseTracker.user.entity;
 
 
 import jakarta.persistence.*;
