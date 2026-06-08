@@ -1,4 +1,4 @@
-package com.AIExpense.ExpenseTracker.entity;
+package com.AIExpense.ExpenseTracker.user.entity;
 
 
 import jakarta.persistence.*;
@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,9 +16,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "budgets")
-public class Budget {
-
+@Table(name = "expenses")
+public class Expense {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,10 +25,12 @@ public class Budget {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    @Column(nullable = false , precision = 10, scale = 2)
+    private BigDecimal amount;
+    private String description;
     @Column(nullable = false)
     private String category;
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal monthlyLimit;
+    private LocalDate expenseDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -42,4 +44,5 @@ public class Budget {
     protected void onUpdate(){
         this.updatedAt = LocalDateTime.now();
     }
+
 }

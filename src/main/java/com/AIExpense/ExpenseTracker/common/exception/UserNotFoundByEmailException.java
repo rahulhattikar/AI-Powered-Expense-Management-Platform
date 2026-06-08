@@ -1,4 +1,4 @@
-package com.AIExpense.ExpenseTracker.exception;
+package com.AIExpense.ExpenseTracker.common.exception;
 
 public class UserNotFoundByEmailException extends RuntimeException{
     public UserNotFoundByEmailException(String message) {

@@ -1,13 +1,13 @@
-package com.AIExpense.ExpenseTracker.service;
+package com.AIExpense.ExpenseTracker.user.service;
 
-import com.AIExpense.ExpenseTracker.dto.UserRequest;
-import com.AIExpense.ExpenseTracker.dto.UserResponse;
-import com.AIExpense.ExpenseTracker.entity.User;
-import com.AIExpense.ExpenseTracker.exception.EmailAlreadyExistsException;
-import com.AIExpense.ExpenseTracker.exception.UserNotFoundByEmailException;
-import com.AIExpense.ExpenseTracker.exception.UserNotFoundException;
-import com.AIExpense.ExpenseTracker.mapper.UserMapper;
-import com.AIExpense.ExpenseTracker.repository.UserRepository;
+import com.AIExpense.ExpenseTracker.user.dto.UserRequest;
+import com.AIExpense.ExpenseTracker.user.dto.UserResponse;
+import com.AIExpense.ExpenseTracker.user.entity.User;
+import com.AIExpense.ExpenseTracker.common.exception.EmailAlreadyExistsException;
+import com.AIExpense.ExpenseTracker.common.exception.UserNotFoundByEmailException;
+import com.AIExpense.ExpenseTracker.common.exception.UserNotFoundException;
+import com.AIExpense.ExpenseTracker.user.mapper.UserMapper;
+import com.AIExpense.ExpenseTracker.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;

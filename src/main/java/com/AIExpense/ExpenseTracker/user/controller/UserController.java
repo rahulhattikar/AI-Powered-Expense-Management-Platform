@@ -1,8 +1,8 @@
-package com.AIExpense.ExpenseTracker.controller;
+package com.AIExpense.ExpenseTracker.user.controller;
 
-import com.AIExpense.ExpenseTracker.dto.UserRequest;
-import com.AIExpense.ExpenseTracker.dto.UserResponse;
-import com.AIExpense.ExpenseTracker.service.UserService;
+import com.AIExpense.ExpenseTracker.user.dto.UserRequest;
+import com.AIExpense.ExpenseTracker.user.dto.UserResponse;
+import com.AIExpense.ExpenseTracker.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
