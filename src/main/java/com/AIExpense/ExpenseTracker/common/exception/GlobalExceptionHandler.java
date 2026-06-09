@@ -12,19 +12,24 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-        @ExceptionHandler(UserNotFoundException.class)
-        public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        }
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 
-        @ExceptionHandler(EmailAlreadyExistsException.class)
-        public ResponseEntity<String> handleEmailExists(EmailAlreadyExistsException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-        }
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<String> handleEmailExists(EmailAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
 
     @ExceptionHandler(UserNotFoundByEmailException.class)
     public ResponseEntity<String> handleInvalidEmails(UserNotFoundByEmailException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ExpenseNotFoundException.class)
+    public ResponseEntity<String> handleExpenseNotFound(ExpenseNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
 
@@ -37,4 +42,4 @@ public class GlobalExceptionHandler {
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
-    }
+}
