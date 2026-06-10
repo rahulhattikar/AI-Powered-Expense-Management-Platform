@@ -1,45 +1,51 @@
-package com.AIExpense.ExpenseTracker.user.entity;
+package com.AIExpense.ExpenseTracker.budget.entity;
 
 
+import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+import com.AIExpense.ExpenseTracker.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 @Builder
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "budgets")
 public class Budget {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @Column(nullable = false)
-    private String category;
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Enumerated(EnumType.STRING)
+    private ExpenseCategory category;
+    @Column(name = "monthly_limit", nullable = false, precision = 10, scale = 2)
     private BigDecimal monthlyLimit;
+    @Column(nullable = false)
+    private int month;
+    @Column(nullable = false)
+    private int year;
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 }
