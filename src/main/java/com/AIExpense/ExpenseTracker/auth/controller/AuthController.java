@@ -30,7 +30,6 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         // Call authService.login()
         // Return token in response
-
         return ResponseEntity.ok(authService.login(request));
     }
 }

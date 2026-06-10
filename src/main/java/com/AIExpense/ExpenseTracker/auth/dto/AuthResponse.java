@@ -1,8 +1,8 @@
 package com.AIExpense.ExpenseTracker.auth.dto;
 
-public record AuthResponse (
+public record AuthResponse(
         String token,
         String email,
         String name
-){
+) {
 }

@@ -40,4 +40,6 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     @Query("SELECT SUM(e.amount) FROM Expense e where e.user.id = :userId")
     BigDecimal getTotalAmountByUserId(@Param("userId") Long userId);
+
+
 }

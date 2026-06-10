@@ -28,7 +28,7 @@ public class User implements UserDetails {
     private Long id;
     @Column(nullable = false)
     private String name;
-    @Column(nullable = false , unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
     @Column(nullable = false)
     private String password;
@@ -41,13 +41,13 @@ public class User implements UserDetails {
 
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
