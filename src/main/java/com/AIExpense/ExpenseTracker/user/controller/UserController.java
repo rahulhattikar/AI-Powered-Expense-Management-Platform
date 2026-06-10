@@ -22,12 +22,12 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userRequest) {
-          UserResponse user  = userService.createUser(userRequest);
-          return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        UserResponse user = userService.createUser(userRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id){
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         log.info("REST request to get user by id: {}", id);
         return ResponseEntity.ok(userService.getUserById(id));
     }
@@ -39,11 +39,10 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers(){
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         log.info("REST request to get all users");
         return ResponseEntity.ok(userService.getAllUsers());
-   }
-
+    }
 
 
 }

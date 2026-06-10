@@ -27,22 +27,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse  createUser(UserRequest userRequest){
+    public UserResponse createUser(UserRequest userRequest) {
         log.info("Creating user with email: {}", userRequest.email());
 
-       if(userRepository.existsByEmail(userRequest.email())){
-           throw new EmailAlreadyExistsException("Email already exists: " + userRequest.email());
-       }
+        if (userRepository.existsByEmail(userRequest.email())) {
+            throw new EmailAlreadyExistsException("Email already exists: " + userRequest.email());
+        }
 
-       User user = User.builder()
-               .name(userRequest.name())
-               .email(userRequest.email())
-               .password(passwordEncoder.encode(userRequest.password()))
-               .build();
+        User user = User.builder()
+                .name(userRequest.name())
+                .email(userRequest.email())
+                .password(passwordEncoder.encode(userRequest.password()))
+                .build();
 
-              User savedUser = userRepository.save(user);
-              log.info("User created with id: {}", savedUser.getId());
-              return UserMapper.toResponse(savedUser);
+        User savedUser = userRepository.save(user);
+        log.info("User created with id: {}", savedUser.getId());
+        return UserMapper.toResponse(savedUser);
     }
 
     @Override
@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
                 .map(UserMapper::toResponse)
                 .orElseThrow(() -> new UserNotFoundByEmailException("User not found with email: " + email));
     }
+
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
@@ -66,11 +67,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers(){
+    public List<UserResponse> getAllUsers() {
 
         log.info("Fetching all users");
-         return   userRepository.findAll()
-                   .stream().map(UserMapper::toResponse)
-                   .toList();
+        return userRepository.findAll()
+                .stream().map(UserMapper::toResponse)
+                .toList();
     }
 }
