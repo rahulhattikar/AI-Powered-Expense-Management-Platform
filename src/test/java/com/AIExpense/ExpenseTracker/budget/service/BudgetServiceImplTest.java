@@ -6,7 +6,7 @@ import com.AIExpense.ExpenseTracker.budget.dto.BudgetStatusResponse;
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.budget.repository.BudgetRepository;
 import com.AIExpense.ExpenseTracker.common.exception.BudgetNotFoundException;
-import com.AIExpense.ExpenseTracker.expense.dto.PagedResponse;
+import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.service.ExpenseService;
 import com.AIExpense.ExpenseTracker.user.entity.Role;

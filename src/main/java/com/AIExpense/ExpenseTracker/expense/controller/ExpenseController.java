@@ -3,7 +3,7 @@ package com.AIExpense.ExpenseTracker.expense.controller;
 
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseRequest;
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseResponse;
-import com.AIExpense.ExpenseTracker.expense.dto.PagedResponse;
+import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.service.ExpenseService;
 import io.swagger.v3.oas.annotations.Operation;

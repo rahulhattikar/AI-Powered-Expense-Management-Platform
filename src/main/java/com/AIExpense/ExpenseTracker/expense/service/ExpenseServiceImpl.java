@@ -4,7 +4,7 @@ package com.AIExpense.ExpenseTracker.expense.service;
 import com.AIExpense.ExpenseTracker.common.exception.ExpenseNotFoundException;
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseRequest;
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseResponse;
-import com.AIExpense.ExpenseTracker.expense.dto.PagedResponse;
+import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.mapper.ExpenseMapper;
