@@ -4,6 +4,7 @@ package com.AIExpense.ExpenseTracker.expense.service;
 import com.AIExpense.ExpenseTracker.common.exception.ExpenseNotFoundException;
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseRequest;
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseResponse;
+import com.AIExpense.ExpenseTracker.expense.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.mapper.ExpenseMapper;
@@ -12,13 +13,18 @@ import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -31,6 +37,9 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final AuthenticationUtils authenticationUtils;
 
     private static final String EXPENSE = "Expense not found with id: ";
+
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of("expenseDate", "amount", "category", "createdAt");
 
     @Override
     @Transactional
@@ -61,15 +70,6 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .orElseThrow(() -> new ExpenseNotFoundException(EXPENSE + id));
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ExpenseResponse> getAllExpenses() {
-        log.info("Getting all expenses for user");
-        User user = authenticationUtils.getCurrentUser();
-        return expenseRepository.findByUserId(user.getId())
-                .stream().map(ExpenseMapper::toResponse)
-                .toList();
-    }
 
     @Override
     public ExpenseResponse updateExpense(Long id, ExpenseRequest request) {
@@ -129,6 +129,42 @@ public class ExpenseServiceImpl implements ExpenseService {
         User user = authenticationUtils.getCurrentUser();
         log.info("Getting total amount for user id: {}", user.getId());
         return expenseRepository.getTotalAmountByUserId(user.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<ExpenseResponse> getAllExpensesPaged(int page, int size,
+                                                              String sortBy,
+                                                              String sortDirection) {
+
+
+        log.info("Getting all  budgets page: {} size: {}", page, size);
+        User user = authenticationUtils.getCurrentUser();
+
+
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new IllegalArgumentException("Invalid sort field: " + sortBy);
+        }
+
+        Sort sort = sortDirection.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page , size , sort);
+
+        Page<Expense> expensePage = expenseRepository.findByUserId(user.getId(), pageable);
+
+        return new PagedResponse<>(
+                expensePage.getContent().stream().map(
+                        ExpenseMapper::toResponse
+                ).toList(),
+                expensePage.getNumber(),
+                expensePage.getSize(),
+                expensePage.getTotalElements(),
+                expensePage.getTotalPages(),
+                expensePage.isLast()
+        );
+
     }
 
 }

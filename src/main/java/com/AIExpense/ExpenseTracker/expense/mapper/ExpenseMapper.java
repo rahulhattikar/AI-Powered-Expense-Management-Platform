@@ -1,6 +1,7 @@
 package com.AIExpense.ExpenseTracker.expense.mapper;
 
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseResponse;
+import com.AIExpense.ExpenseTracker.expense.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 
 
@@ -16,4 +17,6 @@ public class ExpenseMapper {
                 expense.getUser().getId(), expense.getCreatedAt(),
                 expense.getUpdatedAt());
     }
+
+
 }
