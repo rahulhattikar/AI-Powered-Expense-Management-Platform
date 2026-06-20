@@ -8,17 +8,23 @@ import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.budget.mapper.BudgetMapper;
 import com.AIExpense.ExpenseTracker.budget.repository.BudgetRepository;
 import com.AIExpense.ExpenseTracker.common.exception.BudgetNotFoundException;
+import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.service.ExpenseService;
 import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,9 @@ public class BudgetServiceImpl implements BudgetService {
     private final ExpenseService expenseService;
 
     private final AuthenticationUtils authenticationUtils;
+
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of("monthlyLimit", "category", "month", "year", "createdAt");
 
     @Override
     @Transactional
@@ -132,20 +141,37 @@ public class BudgetServiceImpl implements BudgetService {
                 .toList();
     }
 
+
     @Override
     @Transactional(readOnly = true)
-    public List<BudgetResponse> getAllBudgets() {
-        log.info("Getting all budgets for current user");
-        User user = authenticationUtils.getCurrentUser();
-        List<Budget> budgets = budgetRepository.findAllByUserId(user.getId());
+    public PagedResponse<BudgetResponse> getAllBudgetsPaged(int page, int size, String sortBy, String sortDirection) {
 
-        if (budgets.isEmpty()) {
-            throw new BudgetNotFoundException("No budgets found for current user");
+        log.info("Getting all  budgets page: {} size: {}", page, size);
+        User user = authenticationUtils.getCurrentUser();
+
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new IllegalArgumentException("Invalid sort field: " + sortBy);
         }
 
-        return budgets.stream()
-                .map(BudgetMapper::toResponse)
-                .toList();
+        Sort sort = sortDirection.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Budget> budgetPage = budgetRepository.findAllByUserId(user.getId(), pageable);
+
+        return new PagedResponse<>(
+                budgetPage.getContent()
+                        .stream()
+                        .map(BudgetMapper::toResponse)
+                        .toList(),
+                budgetPage.getNumber(),
+                budgetPage.getSize(),
+                budgetPage.getTotalElements(),
+                budgetPage.getTotalPages(),
+                budgetPage.isLast()
+        );
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.AIExpense.ExpenseTracker.expense.service;
 
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseRequest;
 import com.AIExpense.ExpenseTracker.expense.dto.ExpenseResponse;
+import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 
 import java.math.BigDecimal;
@@ -13,8 +14,6 @@ public interface ExpenseService {
     ExpenseResponse createExpense(ExpenseRequest request);
 
     ExpenseResponse getExpenseById(Long id);
-
-    List<ExpenseResponse> getAllExpenses();
 
     ExpenseResponse updateExpense(Long id, ExpenseRequest request);
 
@@ -27,6 +26,9 @@ public interface ExpenseService {
     BigDecimal getTotalSpendingByCategory(ExpenseCategory category);
 
     BigDecimal getTotalSpending();
+
+    PagedResponse<ExpenseResponse> getAllExpensesPaged(int page, int size,
+                                                       String sortBy, String sortDirection);
 
 
 }
