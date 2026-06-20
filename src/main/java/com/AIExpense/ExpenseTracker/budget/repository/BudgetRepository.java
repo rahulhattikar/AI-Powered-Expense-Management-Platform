@@ -2,6 +2,8 @@ package com.AIExpense.ExpenseTracker.budget.repository;
 
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,6 +48,8 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
             @Param("year") int year);
 
     List<Budget> findAllByUserId(Long userId);
+
+    Page<Budget> findAllByUserId(Long userId , Pageable pageable);
 
     boolean existsByUserIdAndCategoryAndMonthAndYear(
             Long userId,

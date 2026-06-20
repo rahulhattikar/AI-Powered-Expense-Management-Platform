@@ -2,6 +2,8 @@ package com.AIExpense.ExpenseTracker.expense.repository;
 
 import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +20,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     Optional<Expense> findByIdAndUserId(Long id, Long userId);
 
     List<Expense> findByUserId(Long userId);
+
+
+    Page<Expense> findByUserId(Long userId, Pageable pageable);
 
     List<Expense> findByCategoryAndUserId(ExpenseCategory category, Long userId);
 

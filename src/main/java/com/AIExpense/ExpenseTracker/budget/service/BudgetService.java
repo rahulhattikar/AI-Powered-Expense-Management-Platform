@@ -4,6 +4,7 @@ package com.AIExpense.ExpenseTracker.budget.service;
 import com.AIExpense.ExpenseTracker.budget.dto.BudgetRequest;
 import com.AIExpense.ExpenseTracker.budget.dto.BudgetResponse;
 import com.AIExpense.ExpenseTracker.budget.dto.BudgetStatusResponse;
+import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public interface BudgetService {
                                                              int month,
                                                              int year);
 
-    List<BudgetResponse> getAllBudgets();
+    PagedResponse<BudgetResponse> getAllBudgetsPaged(int page, int size, String sortBy, String sortDirection);
 
     Boolean isBudgetExists(ExpenseCategory category,
                            int month,
