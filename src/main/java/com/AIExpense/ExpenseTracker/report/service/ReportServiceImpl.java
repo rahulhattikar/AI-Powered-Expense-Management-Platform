@@ -3,7 +3,6 @@ package com.AIExpense.ExpenseTracker.report.service;
 
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.budget.repository.BudgetRepository;
-import com.AIExpense.ExpenseTracker.common.dto.CachedList;
 import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
