@@ -11,9 +11,11 @@ import com.AIExpense.ExpenseTracker.expense.mapper.ExpenseMapper;
 import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
 import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
+import com.AIExpense.ExpenseTracker.util.CacheNames;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +45,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public ExpenseResponse createExpense(ExpenseRequest request) {
         log.info("Creating expense for user");
         User user = authenticationUtils.getCurrentUser();
@@ -72,6 +76,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 
     @Override
+    @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public ExpenseResponse updateExpense(Long id, ExpenseRequest request) {
         log.info("Updating expense with id: {}", id);
         User user = authenticationUtils.getCurrentUser();
@@ -85,6 +91,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
+    @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public void deleteExpense(Long expenseId) {
         log.info("Deleting expense with id: {}", expenseId);
         User user = authenticationUtils.getCurrentUser();

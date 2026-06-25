@@ -13,8 +13,10 @@ import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.service.ExpenseService;
 import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
+import com.AIExpense.ExpenseTracker.util.CacheNames;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +44,8 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public BudgetResponse createBudget(BudgetRequest budgetRequest) {
         log.info("Creating budget for category: {}", budgetRequest.category());
         User user = authenticationUtils.getCurrentUser();
@@ -57,6 +61,8 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public BudgetResponse updateBudget(Long id, BudgetRequest budgetRequest) {
         log.info("Updating budget with id {}", id);
         User user = authenticationUtils.getCurrentUser();
@@ -70,6 +76,8 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public void deleteBudget(Long id) {
         log.info("Deleting budget with id: {}", id);
         User user = authenticationUtils.getCurrentUser();
