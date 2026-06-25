@@ -9,8 +9,10 @@ import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
 import com.AIExpense.ExpenseTracker.report.dto.*;
 import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "monthlySummary", key = "#month + '-' + #year + '-' + @authenticationUtils.getCurrentUser().id")
     public MonthlySummaryResponse getMonthlySummary(int month, int year) {
 
         log.info("Getting monthly summary for month: {} year: {}", month, year);
@@ -98,6 +101,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "categorySummary", key = "#category + '-' + #month + '-' + #year + '-' + @authenticationUtils.getCurrentUser().id")
     public CategorySummaryResponse getCategorySummary(ExpenseCategory category, int month, int year) {
 
         log.info("Getting Category summary for: {} for month: {} year: {}",
@@ -154,6 +158,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "topSpendingCategories", key = "#month + '-' + #year + '-' + #limit + '-' + @authenticationUtils.getCurrentUser().id")
     public List<TopSpendingCategoryResponse> getTopSpendingCategories(int month, int year, int limit) {
 
         log.info("Getting top {} spending categories for month: {} year: {}",
@@ -200,6 +205,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "budgetRemaining", key = "#month + '-' + #year + '-' + @authenticationUtils.getCurrentUser().id")
     public List<BudgetRemainingResponse> getBudgetRemaining(int month, int year) {
 
         log.info("Getting Budget remaining for each category for month: {} year: {}",
@@ -276,6 +282,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "monthlyTrend", key = "#months + '-' + @authenticationUtils.getCurrentUser().id")
     public List<MonthlyTrendResponse> getMonthlyTrend(int months) {
 
         log.info("Getting monthly trend for last {} months", months);
