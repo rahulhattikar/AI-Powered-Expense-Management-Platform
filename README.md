@@ -64,3 +64,26 @@ Phase 1 - Monolith Development
 2. Start PostgreSQL via Docker: `docker-compose up -d`
 3. Run Spring Boot application
 4. Access API at `http://localhost:8080`
+
+## Running with Docker
+
+This project is fully containerized — no local Java, Maven, PostgreSQL, or Redis installation required.
+
+### Prerequisites
+- Docker Desktop installed and running
+
+### Run the full stack
+```bash
+git clone https://github.com/rahulhattikar/AI-Powered-Expense-Management-Platform.git
+cd AI-Powered-Expense-Management-Platform/ExpenseTracker
+docker-compose up --build
+```
+
+The application will be available at `http://localhost:8080`
+Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+### Stopping
+```bash
+docker-compose down          # stops containers, keeps data
+docker-compose down -v       # stops containers AND wipes all data
+```
