@@ -17,6 +17,15 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+    networks:
+      - expense-tracker-net
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 
   redis:
     image: redis:7-alpine
@@ -29,6 +38,39 @@ services:
     volumes:
       - redis_data:/data
 
+    networks:
+      - expense-tracker-net
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  app:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: expense-tracker-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - expense-tracker-net
+
+
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  expense-tracker-net:
+    driver: bridge
