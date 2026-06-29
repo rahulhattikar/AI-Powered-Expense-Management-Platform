@@ -47,7 +47,6 @@ jobs:
           cache: 'maven'
 
       - name: Run tests
-        working-directory: ./ExpenseTracker
         run: ./mvnw clean test
         env:
           SPRING_PROFILES_ACTIVE: docker
@@ -55,5 +54,4 @@ jobs:
           SPRING_DATA_REDIS_HOST: localhost
 
       - name: Build Docker image
-        working-directory: ./ExpenseTracker
         run: docker build -t expense-tracker-app:ci-test .
