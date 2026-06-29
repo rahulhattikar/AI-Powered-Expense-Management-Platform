@@ -1,6 +1,8 @@
 # AI-Powered-Expense-Management-Platform
 Buiding AI powered Expense Management App, that tracks daily expenses of a user.
 
+![CI](https://github.com/rahulhattikar/AI-Powered-Expense-Management-Platform/actions/workflows/ci.yml/badge.svg)
+
 
 Production-grade backend project built to learn:
 
