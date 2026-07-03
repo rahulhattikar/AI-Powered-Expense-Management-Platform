@@ -9,6 +9,8 @@ import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.mapper.ExpenseMapper;
 import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
+import com.AIExpense.ExpenseTracker.kafka.event.ExpenseCreatedEvent;
+import com.AIExpense.ExpenseTracker.kafka.producer.ExpenseEventProducer;
 import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import com.AIExpense.ExpenseTracker.util.CacheNames;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +40,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final ExpenseRepository expenseRepository;
 
     private final AuthenticationUtils authenticationUtils;
+
+    private final ExpenseEventProducer expenseEventProducer;
 
     private static final String EXPENSE = "Expense not found with id: ";
 
@@ -61,6 +66,16 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Expense savedExpense = expenseRepository.save(expense);
         log.info("Expense created with id: {}", savedExpense.getId());
+
+        expenseEventProducer.publishExpenseCreated(new ExpenseCreatedEvent(
+                savedExpense.getId(),
+                user.getId(),
+                savedExpense.getAmount(),
+                savedExpense.getCategory(),
+                savedExpense.getExpenseDate(),
+                LocalDateTime.now()
+        ));
+
         return ExpenseMapper.toResponse(savedExpense);
     }
 
