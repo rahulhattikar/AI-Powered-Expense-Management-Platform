@@ -8,6 +8,8 @@ import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
+import com.AIExpense.ExpenseTracker.kafka.event.ExpenseCreatedEvent;
+import com.AIExpense.ExpenseTracker.kafka.producer.ExpenseEventProducer;
 import com.AIExpense.ExpenseTracker.user.entity.Role;
 import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
@@ -43,12 +45,16 @@ public class ExpenseServiceImplTest {
     @Mock
     private AuthenticationUtils authenticationUtils;
 
+    @Mock
+    private ExpenseEventProducer expenseEventProducer;
+
     @InjectMocks
     private ExpenseServiceImpl expenseService;
 
     private User testUser;
     private Expense testExpense;
     private ExpenseRequest expenseRequest;
+    private ExpenseCreatedEvent expenseCreatedEvent;
 
     @BeforeEach
     void setUp() {
@@ -92,6 +98,7 @@ public class ExpenseServiceImplTest {
 
         verify(authenticationUtils).getCurrentUser();
         verify(expenseRepository).save(any(Expense.class));
+        verify(expenseEventProducer).publishExpenseCreated(any(ExpenseCreatedEvent.class));
     }
 
 
