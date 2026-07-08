@@ -76,6 +76,8 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: docker
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/expense_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
 
