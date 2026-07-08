@@ -1,2 +1,7 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# Force LF line endings for shell scripts regardless of OS,
+# since these execute inside Linux containers
+*.sh text eol=lf
+mvnw text eol=lf
