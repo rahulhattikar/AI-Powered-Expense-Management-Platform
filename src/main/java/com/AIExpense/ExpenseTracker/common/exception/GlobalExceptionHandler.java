@@ -38,8 +38,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BudgetNotFoundException.class)
-    public ResponseEntity<String> handleBudgetNotFound(BudgetNotFoundException ex){
+    public ResponseEntity<String> handleBudgetNotFound(BudgetNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(AiServiceUnavailableException.class)
+    public ResponseEntity<String> handleAiServiceUnavailable(AiServiceUnavailableException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
 
