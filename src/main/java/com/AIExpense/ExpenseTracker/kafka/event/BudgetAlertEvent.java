@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record BudgetAlertEvent(
         Long userId,
+        String userEmail,
         ExpenseCategory category,
         BigDecimal budgetLimit,
         BigDecimal actualSpending,
