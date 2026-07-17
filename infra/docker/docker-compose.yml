@@ -86,6 +86,25 @@ services:
     networks:
       - expense-tracker-net
 
+  notification-service:
+    build:
+      context: ../../services/notification-service
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    container_name: notification-service
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_APP_PASSWORD: ${MAIL_PASSWORD}
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    networks:
+      - expense-tracker-net
+
   app:
     build:
       context: ../..
@@ -96,8 +115,6 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
