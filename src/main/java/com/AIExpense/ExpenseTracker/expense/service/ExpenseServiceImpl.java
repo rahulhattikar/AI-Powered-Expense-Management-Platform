@@ -70,6 +70,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         expenseEventProducer.publishExpenseCreated(new ExpenseCreatedEvent(
                 savedExpense.getId(),
                 user.getId(),
+                user.getEmail(),
                 savedExpense.getAmount(),
                 savedExpense.getCategory(),
                 savedExpense.getExpenseDate(),
