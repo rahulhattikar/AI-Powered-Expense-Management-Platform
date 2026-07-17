@@ -1,13 +1,12 @@
-package com.AIExpense.ExpenseTracker;
+package com.aiexpense.notificationservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ExpenseTrackerApplicationTests {
+class NotificationServiceApplicationTests {
 
     @Test
     void contextLoads() {
     }
-
 }

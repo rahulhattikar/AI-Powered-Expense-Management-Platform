@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public record ExpenseCreatedEvent(
         Long expenseId,
         Long userId,
+        String userEmail,
         BigDecimal amount,
         ExpenseCategory category,
         LocalDate expenseDate,
