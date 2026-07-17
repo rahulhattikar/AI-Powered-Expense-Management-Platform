@@ -1,19 +1,18 @@
-package com.AIExpense.ExpenseTracker.kafka.event;
-
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+package com.aiexpense.notificationservice.event;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
+
 public record BudgetAlertEvent(
         Long userId,
         String userEmail,
-        ExpenseCategory category,
+        String category,
         BigDecimal budgetLimit,
         BigDecimal actualSpending,
         BigDecimal exceededBy,
         int month,
         int year,
         LocalDateTime occurredAt
-) {
-}
+) {}

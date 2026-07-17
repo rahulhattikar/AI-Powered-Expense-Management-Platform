@@ -59,6 +59,7 @@ public class BudgetAlertConsumer {
                                 String.valueOf(event.userId()),
                                 new BudgetAlertEvent(
                                         event.userId(),
+                                        event.userEmail(),
                                         event.category(),
                                         budget.getMonthlyLimit(),
                                         actualSpending,
