@@ -1,4 +1,4 @@
-package com.AIExpense.ExpenseTracker.ai.client;
+package com.aiexpense.aiservice.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

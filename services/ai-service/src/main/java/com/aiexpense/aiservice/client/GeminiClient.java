@@ -1,7 +1,7 @@
-package com.AIExpense.ExpenseTracker.ai.client;
+package com.aiexpense.aiservice.client;
 
 
-import com.AIExpense.ExpenseTracker.common.exception.AiServiceUnavailableException;
+import com.aiexpense.aiservice.exception.AiServiceUnavailableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
