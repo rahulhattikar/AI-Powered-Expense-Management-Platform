@@ -1,15 +1,15 @@
-package com.AIExpense.ExpenseTracker.ai.service;
+package com.aiexpense.aiservice.service;
 
-import com.AIExpense.ExpenseTracker.ai.client.GeminiClient;
-import com.AIExpense.ExpenseTracker.ai.dto.ExpenseAnalysisResponse;
-import com.AIExpense.ExpenseTracker.report.dto.MonthlySummaryResponse;
-import com.AIExpense.ExpenseTracker.report.service.ReportService;
+import com.aiexpense.aiservice.client.GeminiClient;
+import com.aiexpense.aiservice.client.ReportServiceClient;
+import com.aiexpense.aiservice.dto.ExpenseAnalysisResponse;
+import com.aiexpense.aiservice.dto.MonthlySummaryResponse;
+import com.aiexpense.aiservice.exception.AiServiceUnavailableException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import com.AIExpense.ExpenseTracker.common.exception.AiServiceUnavailableException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AiAnalysisServiceImpl implements AiAnalysisService {
 
-    private final ReportService reportService;
+    private final ReportServiceClient reportServiceClient;
     private final GeminiClient geminiClient;
     private final ObjectMapper objectMapper;
 
@@ -47,18 +47,17 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
                use ONLY the numbers provided below, do not calculate or estimate any additional figures
             """;
 
-    private record GeminiSummaryPayload(String summary) {
-    }
+    private record GeminiSummaryPayload(String summary) {}
 
     @Override
-    public ExpenseAnalysisResponse analyzeExpenses(int month, int year) {
+    public ExpenseAnalysisResponse analyzeExpenses(int month, int year, String authorizationHeader) {
         log.info("Generating AI expense analysis for month: {} year: {}", month, year);
 
-        MonthlySummaryResponse monthlySummaryResponse = reportService.getMonthlySummary(month, year);
+        MonthlySummaryResponse monthlySummaryResponse =
+                reportServiceClient.getMonthlySummary(month, year, authorizationHeader);
 
         String fullPrompt = SYSTEM_PROMPT + "\n\nNow summarize this MonthlySummaryResponse object:\n"
                 + monthlySummaryResponse.toString();
-
 
         String rawJson = geminiClient.generateContent(fullPrompt);
 
@@ -66,17 +65,11 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         try {
             payload = objectMapper.readValue(rawJson, GeminiSummaryPayload.class);
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse Gemini response as JSON for month: {} year: {} - {}",
-                    month, year, e.getMessage());
+            log.error("Failed to parse Gemini response for month: {} year: {} - {}", month, year, e.getMessage());
             throw new AiServiceUnavailableException("Gemini returned an unparseable response", e);
         }
 
         log.info("AI expense analysis generated successfully for month: {} year: {}", month, year);
-
-        return new ExpenseAnalysisResponse(
-                payload.summary(),
-                monthlySummaryResponse,
-                LocalDateTime.now()
-        );
+        return new ExpenseAnalysisResponse(payload.summary(), monthlySummaryResponse, LocalDateTime.now());
     }
 }

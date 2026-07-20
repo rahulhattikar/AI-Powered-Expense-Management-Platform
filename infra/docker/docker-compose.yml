@@ -117,7 +117,6 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -128,6 +127,22 @@ services:
       kafka-init:
         condition: service_completed_successfully
 
+    networks:
+      - expense-tracker-net
+
+  ai-service:
+    build:
+      context: ../../services/ai-service
+      dockerfile: Dockerfile
+    container_name: ai-service
+    ports:
+      - "8082:8082"
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      REPORT_SERVICE_URL: http://app:8080
+    depends_on:
+      app:
+        condition: service_started
     networks:
       - expense-tracker-net
 

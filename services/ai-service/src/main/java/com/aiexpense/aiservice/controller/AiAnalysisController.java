@@ -1,9 +1,8 @@
-package com.AIExpense.ExpenseTracker.ai.controller;
+package com.aiexpense.aiservice.controller;
 
-
-import com.AIExpense.ExpenseTracker.ai.dto.ExpenseAnalysisRequest;
-import com.AIExpense.ExpenseTracker.ai.dto.ExpenseAnalysisResponse;
-import com.AIExpense.ExpenseTracker.ai.service.AiAnalysisService;
+import com.aiexpense.aiservice.dto.ExpenseAnalysisRequest;
+import com.aiexpense.aiservice.dto.ExpenseAnalysisResponse;
+import com.aiexpense.aiservice.service.AiAnalysisService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -11,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Slf4j
 public class AiAnalysisController {
-
 
     private final AiAnalysisService aiAnalysisService;
 
@@ -36,11 +35,10 @@ public class AiAnalysisController {
     })
     @PostMapping("/expense-analysis")
     public ResponseEntity<ExpenseAnalysisResponse> analyzeExpenses(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
             @Valid @RequestBody ExpenseAnalysisRequest request) {
-        log.info("REST request for AI expense analysis - month: {} year: {}",
-                request.month(), request.year());
+        log.info("REST request for AI expense analysis - month: {} year: {}", request.month(), request.year());
         return ResponseEntity.ok(
-                aiAnalysisService.analyzeExpenses(request.month(), request.year()));
+                aiAnalysisService.analyzeExpenses(request.month(), request.year(), authorizationHeader));
     }
 }
-
