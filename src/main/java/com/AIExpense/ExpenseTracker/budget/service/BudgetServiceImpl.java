@@ -7,6 +7,7 @@ import com.AIExpense.ExpenseTracker.budget.dto.BudgetStatusResponse;
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.budget.mapper.BudgetMapper;
 import com.AIExpense.ExpenseTracker.budget.repository.BudgetRepository;
+import com.AIExpense.ExpenseTracker.common.exception.BudgetAlreadyExistsException;
 import com.AIExpense.ExpenseTracker.common.exception.BudgetNotFoundException;
 import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
@@ -49,6 +50,14 @@ public class BudgetServiceImpl implements BudgetService {
     public BudgetResponse createBudget(BudgetRequest budgetRequest) {
         log.info("Creating budget for category: {}", budgetRequest.category());
         User user = authenticationUtils.getCurrentUser();
+
+       if ( budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(user.getId(),
+                budgetRequest.category(), budgetRequest.month(), budgetRequest.year())){
+           throw new BudgetAlreadyExistsException("Budget already exists for category: " + budgetRequest.category() +
+                   " month: " + budgetRequest.month() +
+                   " year: " + budgetRequest.year());
+        }
+
         Budget budget = Budget.builder()
                 .user(user)
                 .category(budgetRequest.category())

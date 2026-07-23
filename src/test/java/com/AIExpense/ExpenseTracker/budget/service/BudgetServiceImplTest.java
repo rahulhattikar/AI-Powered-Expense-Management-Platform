@@ -5,6 +5,7 @@ import com.AIExpense.ExpenseTracker.budget.dto.BudgetResponse;
 import com.AIExpense.ExpenseTracker.budget.dto.BudgetStatusResponse;
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.budget.repository.BudgetRepository;
+import com.AIExpense.ExpenseTracker.common.exception.BudgetAlreadyExistsException;
 import com.AIExpense.ExpenseTracker.common.exception.BudgetNotFoundException;
 import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
@@ -330,6 +331,20 @@ class BudgetServiceImplTest {
         assertThat(response.monthlyLimit()).isEqualTo(new BigDecimal("5000.00"));
         assertThat(response.actualSpending()).isEqualTo(new BigDecimal("6000.00"));
         assertThat(response.remainingAmount()).isEqualTo(new BigDecimal("-1000.00"));
+    }
+
+    @Test
+    @DisplayName("should throw BudgetAlreadyExistsException when duplicate budget exists for category, month and year")
+    void createBudget_ShouldThrowBudgetAlreadyExistsException_WhenDuplicateExists() {
+        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(
+                1L, ExpenseCategory.FOOD, 6, 2026)).thenReturn(true);
+
+        assertThatThrownBy(() -> budgetService.createBudget(budgetRequest))
+                .isInstanceOf(BudgetAlreadyExistsException.class)
+                .hasMessageContaining("Budget already exists");
+
+        verify(budgetRepository, never()).save(any(Budget.class));
     }
 
 }
