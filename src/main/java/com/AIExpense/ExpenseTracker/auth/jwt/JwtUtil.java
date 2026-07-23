@@ -23,7 +23,7 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    // 1. Generate token from username
+
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -33,19 +33,18 @@ public class JwtUtil {
                 .compact();
     }
 
-    // 2. Extract username from token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // 3. Validate token
+
     public boolean isTokenValid(String token, UserDetails userDetails) {
         String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
 
-    // 5. Private helper - check expiration
+
     private boolean isTokenExpired(String token) {
         Date expirationDate = extractClaim(token, Claims::getExpiration);
         return expirationDate.before(new Date());
