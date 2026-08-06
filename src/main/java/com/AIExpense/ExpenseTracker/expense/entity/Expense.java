@@ -1,7 +1,7 @@
 package com.AIExpense.ExpenseTracker.expense.entity;
 
 
-import com.AIExpense.ExpenseTracker.user.entity.User;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,9 +21,8 @@ public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
     @Column(length = 255)
