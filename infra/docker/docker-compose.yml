@@ -1,5 +1,7 @@
 version: '3.8'
 
+
+
 services:
   postgres:
     image: postgres:16
@@ -7,7 +9,6 @@ services:
     container_name: expense-postgres
 
     environment:
-      POSTGRES_DB: expense_db
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
 
@@ -15,6 +16,7 @@ services:
       - "5432:5432"
 
     volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
       - postgres_data:/var/lib/postgresql/data
 
     networks:
@@ -25,6 +27,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+    command:
+      - "-c"
+      - "timezone=Asia/Kolkata"
 
 
   redis:
@@ -86,6 +92,43 @@ services:
     networks:
       - expense-tracker-net
 
+
+  auth-service:
+    build:
+      context: ../../services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_service_db
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_JWT_SECRET: ${JWT_SECRET}
+      SPRING_JWT_EXPIRATION_MS: ${JWT_EXPIRATION}
+      SPRING_JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION}
+
+      TZ: Asia/Kolkata
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: Asia/Kolkata
+      SPRING_JACKSON_DEFAULT_TIME_ZONE: Asia/Kolkata
+
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_AIEXPENSE_AUTHSERVICE: DEBUG
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - expense-tracker-net
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/api/v1/auth/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    restart: unless-stopped
+
   notification-service:
     build:
       context: ../../services/notification-service
@@ -112,9 +155,19 @@ services:
     container_name: expense-tracker-app
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      JWT_SECRET: ${JWT_SECRET}
+      SPRING_JWT_SECRET: ${JWT_SECRET}
+      SPRING_JWT_EXPIRATION_MS: ${JWT_EXPIRATION}
+      SPRING_JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+
+      TZ: Asia/Kolkata
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: Asia/Kolkata
+
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_AIEXPENSE_EXPENSETRACKER: DEBUG
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -124,6 +177,8 @@ services:
         condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
+      auth-service:
+        condition: service_healthy
 
     networks:
       - expense-tracker-net
@@ -136,6 +191,10 @@ services:
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       REPORT_SERVICE_URL: http://app:8080
+
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_AIEXPENSE_AISERVICE: DEBUG
+
     depends_on:
       app:
         condition: service_started
@@ -151,9 +210,18 @@ services:
       - "9000:9000"
     environment:
       JWT_SECRET: ${JWT_SECRET}
+
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_AIEXPENSE_APIGATEWAY: DEBUG
+
     depends_on:
-      - app
-      - ai-service
+      auth-service:
+        condition: service_healthy
+      app:
+        condition: service_started
+      ai-service:
+        condition: service_started
+
     networks:
       - expense-tracker-net
 
