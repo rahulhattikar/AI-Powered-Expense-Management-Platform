@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
-    @Query("SELECT b FROM Budget b WHERE b.user.id = :userId " +
+    @Query("SELECT b FROM Budget b WHERE b.userId = :userId " +
             "AND b.category = :category")
     List<Budget> findByUserIdAndCategory(
             @Param("userId") Long userId,
@@ -23,12 +23,12 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
     );
 
     @Query("SELECT b FROM Budget b WHERE b.id = :id " +
-            "AND b.user.id = :userId")
+            "AND b.userId = :userId")
     Optional<Budget> findByIdAndUserId(
             @Param("id") Long budgetId,
             @Param("userId") Long userId);
 
-    @Query("SELECT b FROM Budget b WHERE b.user.id = :userId " +
+    @Query("SELECT b FROM Budget b WHERE b.userId = :userId " +
             "AND b.month = :month " +
             "AND b.year = :year")
     List<Budget> findAllByUserIdAndMonthAndYear(
@@ -37,7 +37,7 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
             @Param("year") int year
     );
 
-    @Query("SELECT b FROM Budget b WHERE b.user.id = :userId " +
+    @Query("SELECT b FROM Budget b WHERE b.userId = :userId " +
             "AND b.category = :category " +
             "AND b.month = :month " +
             "AND b.year = :year")
@@ -47,7 +47,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
             @Param("month") int month,
             @Param("year") int year);
 
-    List<Budget> findAllByUserId(Long userId);
 
     Page<Budget> findAllByUserId(Long userId , Pageable pageable);
 
@@ -58,7 +57,7 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
             int year
     );
 
-    @Query("SELECT b FROM Budget b WHERE b.user.id = :userId " +
+    @Query("SELECT b FROM Budget b WHERE b.userId = :userId " +
             "AND b.category = :category " +
             "AND b.month = :month " +
             "AND b.year = :year")

@@ -12,7 +12,6 @@ import com.AIExpense.ExpenseTracker.common.exception.BudgetNotFoundException;
 import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.service.ExpenseService;
-import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import com.AIExpense.ExpenseTracker.util.CacheNames;
 import lombok.RequiredArgsConstructor;
@@ -49,9 +48,9 @@ public class BudgetServiceImpl implements BudgetService {
             CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public BudgetResponse createBudget(BudgetRequest budgetRequest) {
         log.info("Creating budget for category: {}", budgetRequest.category());
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
 
-       if ( budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(user.getId(),
+       if ( budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(userId,
                 budgetRequest.category(), budgetRequest.month(), budgetRequest.year())){
            throw new BudgetAlreadyExistsException("Budget already exists for category: " + budgetRequest.category() +
                    " month: " + budgetRequest.month() +
@@ -59,7 +58,7 @@ public class BudgetServiceImpl implements BudgetService {
         }
 
         Budget budget = Budget.builder()
-                .user(user)
+                .userId(userId)
                 .category(budgetRequest.category())
                 .monthlyLimit(budgetRequest.monthlyLimit())
                 .month(budgetRequest.month())
@@ -74,8 +73,8 @@ public class BudgetServiceImpl implements BudgetService {
             CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public BudgetResponse updateBudget(Long id, BudgetRequest budgetRequest) {
         log.info("Updating budget with id {}", id);
-        User user = authenticationUtils.getCurrentUser();
-        Budget budget = findBudgetByIdAndUserId(id, user.getId());
+        Long userId = authenticationUtils.getCurrentUserId();
+        Budget budget = findBudgetByIdAndUserId(id, userId);
         budget.setCategory(budgetRequest.category());
         budget.setMonthlyLimit(budgetRequest.monthlyLimit());
         budget.setMonth(budgetRequest.month());
@@ -89,8 +88,8 @@ public class BudgetServiceImpl implements BudgetService {
             CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public void deleteBudget(Long id) {
         log.info("Deleting budget with id: {}", id);
-        User user = authenticationUtils.getCurrentUser();
-        Budget budget = findBudgetByIdAndUserId(id, user.getId());
+        Long userId = authenticationUtils.getCurrentUserId();
+        Budget budget = findBudgetByIdAndUserId(id, userId);
         budgetRepository.delete(budget);
     }
 
@@ -98,8 +97,8 @@ public class BudgetServiceImpl implements BudgetService {
     @Transactional(readOnly = true)
     public BudgetResponse getBudgetById(Long id) {
         log.info("Getting Budget with id: {}", id);
-        User user = authenticationUtils.getCurrentUser();
-        Budget budget = findBudgetByIdAndUserId(id, user.getId());
+        Long userId = authenticationUtils.getCurrentUserId();
+        Budget budget = findBudgetByIdAndUserId(id, userId);
         return BudgetMapper.toResponse(budget);
     }
 
@@ -107,8 +106,8 @@ public class BudgetServiceImpl implements BudgetService {
     @Transactional(readOnly = true)
     public List<BudgetResponse> getBudgetsByCategory(ExpenseCategory category) {
         log.info("get budget by category: {}", category);
-        User user = authenticationUtils.getCurrentUser();
-        List<Budget> budgets = budgetRepository.findByUserIdAndCategory(user.getId(), category);
+        Long userId = authenticationUtils.getCurrentUserId();
+        List<Budget> budgets = budgetRepository.findByUserIdAndCategory(userId, category);
         if (budgets.isEmpty()) {
             throw new BudgetNotFoundException(
                     "No budgets found for category: " + category);
@@ -123,9 +122,9 @@ public class BudgetServiceImpl implements BudgetService {
     @Transactional(readOnly = true)
     public List<BudgetResponse> getBudgetsByMonthAndYear(int month, int year) {
         log.info("Getting budgets of month: {}", month);
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
         List<Budget> budgets = budgetRepository
-                .findAllByUserIdAndMonthAndYear(user.getId(), month, year);
+                .findAllByUserIdAndMonthAndYear(userId, month, year);
 
         if (budgets.isEmpty()) {
             throw new BudgetNotFoundException(
@@ -142,9 +141,9 @@ public class BudgetServiceImpl implements BudgetService {
     @Transactional(readOnly = true)
     public List<BudgetResponse> getBudgetsByCategoryAndMonthAndYear(ExpenseCategory category, int month, int year) {
         log.info("Getting budgets for category: {} month: {} year: {}", category, month, year);
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
         List<Budget> budgets = budgetRepository
-                .findByUserIdAndCategoryAndMonthAndYear(user.getId(), category, month, year);
+                .findByUserIdAndCategoryAndMonthAndYear(userId, category, month, year);
 
         if (budgets.isEmpty()) {
             throw new BudgetNotFoundException(
@@ -164,7 +163,7 @@ public class BudgetServiceImpl implements BudgetService {
     public PagedResponse<BudgetResponse> getAllBudgetsPaged(int page, int size, String sortBy, String sortDirection) {
 
         log.info("Getting all  budgets page: {} size: {}", page, size);
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
 
         if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
             throw new IllegalArgumentException("Invalid sort field: " + sortBy);
@@ -176,7 +175,7 @@ public class BudgetServiceImpl implements BudgetService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Budget> budgetPage = budgetRepository.findAllByUserId(user.getId(), pageable);
+        Page<Budget> budgetPage = budgetRepository.findAllByUserId(userId, pageable);
 
         return new PagedResponse<>(
                 budgetPage.getContent()
@@ -195,8 +194,8 @@ public class BudgetServiceImpl implements BudgetService {
     @Transactional(readOnly = true)
     public Boolean isBudgetExists(ExpenseCategory category, int month, int year) {
         log.info("Checking budget existence for category: {}", category);
-        User user = authenticationUtils.getCurrentUser();
-        return budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(user.getId(),
+        Long userId = authenticationUtils.getCurrentUserId();
+        return budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(userId,
                 category, month, year);
     }
 
@@ -204,9 +203,9 @@ public class BudgetServiceImpl implements BudgetService {
     @Transactional(readOnly = true)
     public BudgetStatusResponse getBudgetStatus(ExpenseCategory category, int month, int year) {
         log.info("Getting budget status for category: {} month: {} year: {}", category, month, year);
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
         Budget budget = budgetRepository
-                .findActiveBudget(user.getId(), category, month, year)
+                .findActiveBudget(userId, category, month, year)
                 .orElseThrow(() -> new BudgetNotFoundException(
                         "No budget found for category: " + category
                                 + " month: " + month
