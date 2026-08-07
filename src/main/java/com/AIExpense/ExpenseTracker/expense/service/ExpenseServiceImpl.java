@@ -11,7 +11,6 @@ import com.AIExpense.ExpenseTracker.expense.mapper.ExpenseMapper;
 import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
 import com.AIExpense.ExpenseTracker.kafka.event.ExpenseCreatedEvent;
 import com.AIExpense.ExpenseTracker.kafka.producer.ExpenseEventProducer;
-import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import com.AIExpense.ExpenseTracker.util.CacheNames;
 import lombok.RequiredArgsConstructor;
@@ -54,14 +53,17 @@ public class ExpenseServiceImpl implements ExpenseService {
             CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public ExpenseResponse createExpense(ExpenseRequest request) {
         log.info("Creating expense for user");
-        User user = authenticationUtils.getCurrentUser();
+
+        Long userId = authenticationUtils.getCurrentUserId();
+        String userEmail = authenticationUtils
+                .extractClaimFromCurrentRequest("email");
 
         Expense expense = Expense.builder()
                 .amount(request.amount())
                 .description(request.description())
                 .category(request.category())
                 .expenseDate(request.expenseDate())
-                .user(user)
+                .userId(userId)
                 .build();
 
         Expense savedExpense = expenseRepository.save(expense);
@@ -69,8 +71,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         expenseEventProducer.publishExpenseCreated(new ExpenseCreatedEvent(
                 savedExpense.getId(),
-                user.getId(),
-                user.getEmail(),
+                userId,
+                userEmail,
                 savedExpense.getAmount(),
                 savedExpense.getCategory(),
                 savedExpense.getExpenseDate(),
@@ -84,8 +86,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional(readOnly = true)
     public ExpenseResponse getExpenseById(Long id) {
         log.info("Getting expense with id: {}", id);
-        User user = authenticationUtils.getCurrentUser();
-        return expenseRepository.findByIdAndUserId(id, user.getId())
+        Long userId = authenticationUtils.getCurrentUserId();
+        return expenseRepository.findByIdAndUserId(id, userId)
                 .map(ExpenseMapper::toResponse)
                 .orElseThrow(() -> new ExpenseNotFoundException(EXPENSE + id));
     }
@@ -96,8 +98,8 @@ public class ExpenseServiceImpl implements ExpenseService {
             CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public ExpenseResponse updateExpense(Long id, ExpenseRequest request) {
         log.info("Updating expense with id: {}", id);
-        User user = authenticationUtils.getCurrentUser();
-        Expense expense = expenseRepository.findByIdAndUserId(id, user.getId())
+        Long userId = authenticationUtils.getCurrentUserId();
+        Expense expense = expenseRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ExpenseNotFoundException(EXPENSE + id));
         expense.setAmount(request.amount());
         expense.setDescription(request.description());
@@ -111,8 +113,8 @@ public class ExpenseServiceImpl implements ExpenseService {
             CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
     public void deleteExpense(Long expenseId) {
         log.info("Deleting expense with id: {}", expenseId);
-        User user = authenticationUtils.getCurrentUser();
-        Expense expense = expenseRepository.findByIdAndUserId(expenseId, user.getId())
+        Long userId = authenticationUtils.getCurrentUserId();
+        Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
                 .orElseThrow(() -> new ExpenseNotFoundException(EXPENSE + expenseId));
         expenseRepository.delete(expense);
     }
@@ -121,8 +123,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Transactional(readOnly = true)
     public List<ExpenseResponse> getExpensesByCategory(ExpenseCategory category) {
         log.info("Finding expenses by category: {}", category);
-        User user = authenticationUtils.getCurrentUser();
-        return expenseRepository.findByCategoryAndUserId(category, user.getId())
+        Long userId = authenticationUtils.getCurrentUserId();
+        return expenseRepository.findByCategoryAndUserId(category, userId)
                 .stream()
                 .map(ExpenseMapper::toResponse)
                 .toList();
@@ -131,9 +133,9 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     @Transactional(readOnly = true)
     public List<ExpenseResponse> getExpensesByMonthAndYear(int month, int year) {
-        User user = authenticationUtils.getCurrentUser();
-        log.info("Finding expenses for user id: {} for month: {} and year: {}", user.getId(), month, year);
-        return expenseRepository.findByUserIdAndMonthAndYear(user.getId(), month, year)
+        Long userId = authenticationUtils.getCurrentUserId();
+        log.info("Finding expenses for user id: {} for month: {} and year: {}", userId, month, year);
+        return expenseRepository.findByUserIdAndMonthAndYear(userId, month, year)
                 .stream()
                 .map(ExpenseMapper::toResponse)
                 .toList();
@@ -142,17 +144,17 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     @Transactional(readOnly = true)
     public BigDecimal getTotalSpendingByCategory(ExpenseCategory category) {
-        User user = authenticationUtils.getCurrentUser();
-        log.info("Getting total amount for user id: {} and category: {}", user.getId(), category);
-        return expenseRepository.getTotalAmountByUserIdAndCategory(user.getId(), category);
+        Long userId = authenticationUtils.getCurrentUserId();
+        log.info("Getting total amount for user id: {} and category: {}", userId, category);
+        return expenseRepository.getTotalAmountByUserIdAndCategory(userId, category);
     }
 
     @Override
     @Transactional(readOnly = true)
     public BigDecimal getTotalSpending() {
-        User user = authenticationUtils.getCurrentUser();
-        log.info("Getting total amount for user id: {}", user.getId());
-        return expenseRepository.getTotalAmountByUserId(user.getId());
+        Long userId = authenticationUtils.getCurrentUserId();
+        log.info("Getting total amount for user id: {}", userId);
+        return expenseRepository.getTotalAmountByUserId(userId);
     }
 
     @Override
@@ -163,7 +165,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 
         log.info("Getting all  budgets page: {} size: {}", page, size);
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
 
 
         if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
@@ -176,7 +178,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Pageable pageable = PageRequest.of(page , size , sort);
 
-        Page<Expense> expensePage = expenseRepository.findByUserId(user.getId(), pageable);
+        Page<Expense> expensePage = expenseRepository.findByUserId(userId, pageable);
 
         return new PagedResponse<>(
                 expensePage.getContent().stream().map(

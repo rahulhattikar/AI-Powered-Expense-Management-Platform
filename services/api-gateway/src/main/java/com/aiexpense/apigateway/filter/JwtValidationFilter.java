@@ -26,37 +26,63 @@ public class JwtValidationFilter implements HandlerFilterFunction<ServerResponse
     private String jwtSecret;
 
     @Override
-    public ServerResponse filter(ServerRequest request, HandlerFunction<ServerResponse> next) throws Exception {
+    public ServerResponse filter(ServerRequest request, HandlerFunction<ServerResponse> next) throws Exception{
 
-        if (request.path().startsWith("/api/v1/auth/")) {
-            return next.handle(request);
-        }
-
-
-        List<String> authHeaders = request.headers().header("Authorization");
-        if (authHeaders.isEmpty() || !authHeaders.get(0).startsWith("Bearer ")) {
-            throw new InvalidTokenException("Missing or malformed Authorization header");
-        }
-
-        String token = authHeaders.get(0).substring(7);
+        log.debug("JWT validation filter called for path: {}", request.path());
 
         try {
+            List<String> authHeaders = request.headers().header("Authorization");
+
+            if (authHeaders.isEmpty()) {
+                log.warn("Missing Authorization header for path: {}", request.path());
+                throw new InvalidTokenException("Missing Authorization header");
+            }
+
+            String authHeader = authHeaders.get(0);
+
+            if (!authHeader.startsWith("Bearer ")) {
+                log.warn("Malformed Authorization header (not Bearer token) for path: {}", request.path());
+                throw new InvalidTokenException("Authorization header must start with 'Bearer '");
+            }
+
+            String token = authHeader.substring(7);
+
+            if (token.isBlank()) {
+                log.warn("Empty bearer token for path: {}", request.path());
+                throw new InvalidTokenException("Bearer token is empty");
+            }
+
             Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token);
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new InvalidTokenException("Invalid or expired token: " + e.getMessage());
-        }
 
-        return next.handle(request);
+            log.debug("JWT token validation successful for path: {}", request.path());
+
+            return next.handle(request);
+
+        } catch (JwtException e) {
+            log.warn("JWT validation failed - invalid token for path: {}, error: {}",
+                    request.path(), e.getMessage());
+            throw new InvalidTokenException("Invalid or expired JWT token: " + e.getMessage());
+
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT validation failed - malformed token for path: {}, error: {}",
+                    request.path(), e.getMessage());
+            throw new InvalidTokenException("Malformed JWT token: " + e.getMessage());
+
+        } catch (Exception e) {
+            log.error("Unexpected error during JWT validation for path: {}",
+                    request.path(), e);
+            throw new InvalidTokenException("JWT validation error: " + e.getMessage());
+        }
     }
+
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
-
 
 

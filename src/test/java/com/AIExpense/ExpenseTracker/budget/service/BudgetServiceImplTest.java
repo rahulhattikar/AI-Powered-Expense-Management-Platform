@@ -10,8 +10,6 @@ import com.AIExpense.ExpenseTracker.common.exception.BudgetNotFoundException;
 import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.service.ExpenseService;
-import com.AIExpense.ExpenseTracker.user.entity.Role;
-import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,23 +48,17 @@ class BudgetServiceImplTest {
     @InjectMocks
     private BudgetServiceImpl budgetService;
 
-    private User testUser;
+
     private Budget testBudget;
     private BudgetRequest budgetRequest;
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder()
-                .id(1L)
-                .name("Rahul")
-                .email("rahul@test.com")
-                .password("encodedPassword")
-                .role(Role.USER)
-                .build();
+
 
         testBudget = Budget.builder()
                 .id(1L)
-                .user(testUser)
+                .userId(1L)
                 .category(ExpenseCategory.FOOD)
                 .monthlyLimit(new BigDecimal("5000.00"))
                 .month(6)
@@ -86,7 +78,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return WITHIN_BUDGET status when spending is below monthly limit")
     void getBudgetStatus_ShouldReturnWithinBudget_WhenSpendingBelowLimit() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.findActiveBudget(1L, ExpenseCategory.FOOD, 6, 2026))
                 .thenReturn(Optional.of(testBudget));
         when(expenseService.getTotalSpendingByCategory(ExpenseCategory.FOOD))
@@ -106,7 +98,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return true when budget exists for given category, month and year")
     void isBudgetExists_ShouldReturnTrue_WhenBudgetExists() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(
                 1L, ExpenseCategory.FOOD, 6, 2026))
                 .thenReturn(true);
@@ -120,7 +112,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return BudgetResponse when create request is valid")
     void createBudget_ShouldReturnBudgetResponse_WhenValidRequest() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.save(any(Budget.class))).thenReturn(testBudget);
 
         BudgetResponse response = budgetService.createBudget(budgetRequest);
@@ -129,7 +121,7 @@ class BudgetServiceImplTest {
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.category()).isEqualTo(ExpenseCategory.FOOD);
 
-        verify(authenticationUtils).getCurrentUser();
+        verify(authenticationUtils).getCurrentUserId();
         verify(budgetRepository).save(any(Budget.class));
     }
 
@@ -138,7 +130,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return BudgetResponse when budget exists with given id")
     void getBudgetById_ShouldReturnBudgetResponse_WhenBudgetExists() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.findByIdAndUserId(1L, 1L))
                 .thenReturn(Optional.of(testBudget));
 
@@ -151,7 +143,7 @@ class BudgetServiceImplTest {
         assertThat(response.month()).isEqualTo(6);
         assertThat(response.year()).isEqualTo(2026);
 
-        verify(authenticationUtils).getCurrentUser();
+        verify(authenticationUtils).getCurrentUserId();
         verify(budgetRepository).findByIdAndUserId(1L, 1L);
 
     }
@@ -160,7 +152,7 @@ class BudgetServiceImplTest {
     @DisplayName("should throw BudgetNotFoundException when budget id does not exist")
     void getBudgetById_ShouldThrowBudgetNotFoundException_WhenNotFound() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.findByIdAndUserId(2L, 1L))
                 .thenReturn(Optional.empty());
 
@@ -177,7 +169,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return paged response with budgets when budgets exist")
     void getAllBudgetsPaged_ShouldReturnPagedResponse_WhenBudgetsExist() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         Page<Budget> budgetPage = new PageImpl<>(
                 List.of(testBudget),
@@ -207,7 +199,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return empty paged response when no budgets exist")
     void getAllBudgetsPaged_ShouldReturnEmptyPagedResponse_WhenNoBudgetsExist() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         Page<Budget> emptyPage = new PageImpl<>(
                 List.of(),
@@ -233,7 +225,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return updated BudgetResponse when budget exists")
     void updateBudget_ShouldReturnUpdatedBudgetResponse_WhenBudgetExists() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.findByIdAndUserId(1L, 1L))
                 .thenReturn(Optional.of(testBudget));
         when(budgetRepository.save(any(Budget.class)))
@@ -254,7 +246,7 @@ class BudgetServiceImplTest {
     void updateBudget_ShouldThrowBudgetNotFoundException_WhenNotFound() {
 
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.findByIdAndUserId(2L, 1L))
                 .thenReturn(Optional.empty());
 
@@ -270,7 +262,7 @@ class BudgetServiceImplTest {
     @DisplayName("should delete budget when budget exists")
     void deleteBudget_ShouldDeleteBudget_WhenBudgetExists() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.findByIdAndUserId(1L, 1L))
                 .thenReturn(Optional.of(testBudget));
 
@@ -283,7 +275,7 @@ class BudgetServiceImplTest {
     @DisplayName("should throw BudgetNotFoundException when budget id does not exist for delete")
     void deleteBudget_ShouldThrowBudgetNotFoundException_WhenNotFound() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.findByIdAndUserId(2L, 1L))
                 .thenReturn(Optional.empty());
 
@@ -299,7 +291,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return false when budget does not exist for given category, month and year")
     void isBudgetExists_ShouldReturnFalse_WhenBudgetNotExists() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.existsByUserIdAndCategoryAndMonthAndYear
                 (1L, ExpenseCategory.HEALTH, 4, 2025))
                 .thenReturn(false);
@@ -317,7 +309,7 @@ class BudgetServiceImplTest {
     @DisplayName("should return EXCEEDED status when spending is above monthly limit")
     void getBudgetStatus_ShouldReturnExceeded_WhenSpendingAboveLimit() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.findActiveBudget(1L, ExpenseCategory.FOOD, 6, 2026))
                 .thenReturn(Optional.of(testBudget));
         when(expenseService.getTotalSpendingByCategory(ExpenseCategory.FOOD))
@@ -336,7 +328,7 @@ class BudgetServiceImplTest {
     @Test
     @DisplayName("should throw BudgetAlreadyExistsException when duplicate budget exists for category, month and year")
     void createBudget_ShouldThrowBudgetAlreadyExistsException_WhenDuplicateExists() {
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(
                 1L, ExpenseCategory.FOOD, 6, 2026)).thenReturn(true);
 

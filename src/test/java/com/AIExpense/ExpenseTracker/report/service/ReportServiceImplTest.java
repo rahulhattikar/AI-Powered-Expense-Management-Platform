@@ -6,8 +6,6 @@ import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
 import com.AIExpense.ExpenseTracker.report.dto.*;
-import com.AIExpense.ExpenseTracker.user.entity.Role;
-import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,23 +42,17 @@ class ReportServiceImplTest {
     @InjectMocks
     private ReportServiceImpl reportService;
 
-    private User testUser;
+
     private Expense testExpense;
     private Budget testBudget;
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder()
-                .id(1L)
-                .name("Rahul")
-                .email("rahul@test.com")
-                .password("encodedPassword")
-                .role(Role.USER)
-                .build();
+
 
         testExpense = Expense.builder()
                 .id(1L)
-                .user(testUser)
+                .userId(1L)
                 .amount(new BigDecimal("500.00"))
                 .description("Grocery shopping")
                 .category(ExpenseCategory.FOOD)
@@ -69,7 +61,7 @@ class ReportServiceImplTest {
 
         testBudget = Budget.builder()
                 .id(1L)
-                .user(testUser)
+                .userId(1L)
                 .category(ExpenseCategory.FOOD)
                 .monthlyLimit(new BigDecimal("5000.00"))
                 .month(6)
@@ -83,7 +75,7 @@ class ReportServiceImplTest {
     @DisplayName("should return monthly summary with category breakdown when expenses exist")
     void getMonthlySummary_ShouldReturnSummary_WhenExpensesExist() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
 
         List<Object[]> categoryData = List.of(
@@ -118,7 +110,7 @@ class ReportServiceImplTest {
     @DisplayName("should return NO_BUDGET status when budget is not set for category")
     void getCategorySummary_ShouldReturnNoBudgetStatus_WhenBudgetNotSet() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         List<Expense> expenses = List.of(testExpense);
         when(expenseRepository.findByCategoryAndUserIdAndMonthAndYear(
@@ -139,7 +131,7 @@ class ReportServiceImplTest {
     @DisplayName("should return trend with percentage change when data exists for multiple months")
     void getMonthlyTrend_ShouldReturnTrendWithPercentageChange_WhenDataExistsForMultipleMonths() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         List<Object[]> trendData = List.of(
                 new Object[]{1, 2026, new BigDecimal("10000.00"), 15L},
@@ -163,7 +155,7 @@ class ReportServiceImplTest {
     @DisplayName("should return zero values when no expenses exist")
     void getMonthlySummary_ShouldReturnZeroValues_WhenNoExpensesExist() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         when(expenseRepository.getTotalSpentByMonth(1L,3,2026))
                 .thenReturn(BigDecimal.ZERO);
@@ -202,7 +194,7 @@ class ReportServiceImplTest {
     @DisplayName("should return WITHIN_BUDGET status when spending is below budget limit")
    void  getCategorySummary_ShouldReturnWithinBudgetStatus_WhenSpendingBelowLimit(){
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         List<Expense> expenses = List.of(testExpense);
 
@@ -236,7 +228,7 @@ class ReportServiceImplTest {
     @DisplayName("should return top spending categories when categories exists")
    void getTopSpendingCategories_ShouldReturnRankedList_WhenCategoriesExist(){
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         List<Object[]> categoryData = List.of(
                 new Object[]{ExpenseCategory.FOOD, new BigDecimal("3000.00")},
@@ -266,7 +258,7 @@ class ReportServiceImplTest {
    @DisplayName("should return empty top spending category list")
   void getTopSpendingCategories_ShouldReturnEmptyList_WhenNoExpensesExist(){
 
-       when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+       when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
        when(expenseRepository.getSpendingByCategoryForMonth(1L, 2, 2026))
                .thenReturn(List.of());
@@ -284,7 +276,7 @@ class ReportServiceImplTest {
   @DisplayName("should return budget remaining for all categories when budget exists")
   void getBudgetRemaining_ShouldReturnAllCategories_WhenBudgetAndExpensesExist(){
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
       List<Object[]> categoryData = List.of(
               new Object[]{ExpenseCategory.FOOD, new BigDecimal("3000.00")},

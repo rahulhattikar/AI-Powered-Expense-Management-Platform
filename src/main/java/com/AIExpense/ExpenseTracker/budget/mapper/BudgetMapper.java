@@ -16,7 +16,7 @@ public class BudgetMapper {
                 budget.getMonthlyLimit(),
                 budget.getMonth(),
                 budget.getYear(),
-                budget.getUser().getId(),
+                budget.getUserId(),
                 budget.getCreatedAt(),
                 budget.getUpdatedAt()
         );

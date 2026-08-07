@@ -1,0 +1,49 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service-test
+
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    initialization-mode: always
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  h2:
+    console:
+      enabled: true
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+
+  jwt:
+    secret: dGVzdC1qd3Qtc2VjcmV0LWJhc2U2NC1lbmNvZGVkLWtleS1mb3ItdGVzdGluZy1vbmx5IQ==
+    expiration-ms: 86400000
+    refresh-expiration-ms: 604800000
+
+  jackson:
+    default-time-zone: Asia/Kolkata
+    serialization:
+      write-dates-as-timestamps: false
+
+  logging:
+    level:
+      root: WARN
+      com.aiexpense.authservice: INFO
+      org.springframework.test: INFO
+      org.springframework.security: DEBUG

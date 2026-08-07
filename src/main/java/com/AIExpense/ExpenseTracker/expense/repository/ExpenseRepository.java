@@ -31,7 +31,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
                                                     LocalDate endDate);
 
     @Query("SELECT e FROM Expense e where e.category=:category " +
-            "AND e.user.id = :userId " +
+            "AND e.userId = :userId " +
             "AND MONTH(e.expenseDate) = :month " +
             "AND YEAR(e.expenseDate) = :year")
     List<Expense> findByCategoryAndUserIdAndMonthAndYear(
@@ -40,7 +40,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             @Param("month") int month,
             @Param("year") int year);
 
-    @Query("SELECT e FROM Expense e where e.user.id = :userId " +
+    @Query("SELECT e FROM Expense e where e.userId = :userId " +
             "AND MONTH(e.expenseDate) = :month " +
             "AND YEAR(e.expenseDate) = :year")
     List<Expense> findByUserIdAndMonthAndYear(@Param("userId") Long userId,
@@ -48,17 +48,17 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
                                               @Param("year") int year);
 
     @Query("SELECT SUM(e.amount) FROM Expense e where " +
-            "e.user.id = :userId " +
+            "e.userId = :userId " +
             "AND e.category = :category")
     BigDecimal getTotalAmountByUserIdAndCategory(@Param("userId") Long userId,
                                                  @Param("category") ExpenseCategory category);
 
-    @Query("SELECT SUM(e.amount) FROM Expense e where e.user.id = :userId")
+    @Query("SELECT SUM(e.amount) FROM Expense e where e.userId = :userId")
     BigDecimal getTotalAmountByUserId(@Param("userId") Long userId);
 
     // Monthly total spending
     @Query("SELECT SUM(e.amount) FROM Expense e " +
-            "WHERE e.user.id = :userId " +
+            "WHERE e.userId = :userId " +
             "AND MONTH(e.expenseDate) = :month " +
             "AND YEAR(e.expenseDate) = :year")
     BigDecimal getTotalSpentByMonth(
@@ -69,7 +69,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     // Count transactions per month
     @Query("SELECT COUNT(e) FROM Expense e " +
-            "WHERE e.user.id = :userId " +
+            "WHERE e.userId = :userId " +
             "AND MONTH(e.expenseDate) = :month " +
             "AND YEAR(e.expenseDate) = :year")
     int countTransactionsByMonth(
@@ -80,7 +80,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     // Spending per category for a month
     @Query("SELECT e.category, SUM(e.amount) FROM Expense e " +
-            "WHERE e.user.id = :userId " +
+            "WHERE e.userId = :userId " +
             "AND MONTH(e.expenseDate) = :month " +
             "AND YEAR(e.expenseDate) = :year " +
             "GROUP BY e.category " +
@@ -93,7 +93,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     // Highest single expense in a month
     @Query("SELECT MAX(e.amount) FROM Expense e " +
-            "WHERE e.user.id = :userId " +
+            "WHERE e.userId = :userId " +
             "AND MONTH(e.expenseDate) = :month " +
             "AND YEAR(e.expenseDate) = :year")
     BigDecimal getHighestExpenseByMonth(
@@ -106,7 +106,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @Query("SELECT MONTH(e.expenseDate), YEAR(e.expenseDate), " +
             "SUM(e.amount), COUNT(e) " +
             "FROM Expense e " +
-            "WHERE e.user.id = :userId " +
+            "WHERE e.userId = :userId " +
             "AND e.expenseDate >= :startDate " +
             "GROUP BY YEAR(e.expenseDate), MONTH(e.expenseDate) " +
             "ORDER BY YEAR(e.expenseDate) ASC, MONTH(e.expenseDate) ASC")

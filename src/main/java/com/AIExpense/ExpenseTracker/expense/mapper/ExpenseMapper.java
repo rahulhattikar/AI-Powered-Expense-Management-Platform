@@ -13,7 +13,7 @@ public class ExpenseMapper {
         return new ExpenseResponse(expense.getId(),
                 expense.getAmount(), expense.getDescription(),
                 expense.getCategory(), expense.getExpenseDate(),
-                expense.getUser().getId(), expense.getCreatedAt(),
+                expense.getUserId(), expense.getCreatedAt(),
                 expense.getUpdatedAt());
     }
 
