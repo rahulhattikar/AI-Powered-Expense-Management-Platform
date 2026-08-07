@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: auth-service
+
+  jwt:
+    secret: ${SPRING_JWT_SECRET}
+    expiration-ms: ${SPRING_JWT_EXPIRATION_MS}
+    refresh-expiration-ms: ${SPRING_JWT_REFRESH_EXPIRATION_MS}
+
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/auth_service_db
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        open-in-view: false
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Kolkata
+
+  jackson:
+    default-time-zone: Asia/Kolkata
+    serialization:
+      write-dates-as-timestamps: false
+
+
+
+server:
+  port: 8081
+
+logging:
+  level:
+    root: INFO
+    com.AIExpense.AuthService: DEBUG

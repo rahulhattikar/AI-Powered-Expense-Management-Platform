@@ -10,8 +10,6 @@ import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
 import com.AIExpense.ExpenseTracker.kafka.event.ExpenseCreatedEvent;
 import com.AIExpense.ExpenseTracker.kafka.producer.ExpenseEventProducer;
-import com.AIExpense.ExpenseTracker.user.entity.Role;
-import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,24 +49,16 @@ public class ExpenseServiceImplTest {
     @InjectMocks
     private ExpenseServiceImpl expenseService;
 
-    private User testUser;
     private Expense testExpense;
     private ExpenseRequest expenseRequest;
     private ExpenseCreatedEvent expenseCreatedEvent;
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder()
-                .id(1L)
-                .name("Rahul")
-                .email("rahul@test.com")
-                .password("encodedPassword")
-                .role(Role.USER)
-                .build();
 
         testExpense = Expense.builder()
                 .id(1L)
-                .user(testUser)
+                .userId(1L)
                 .amount(new BigDecimal("500.00"))
                 .description("Grocery shopping")
                 .category(ExpenseCategory.FOOD)
@@ -87,7 +77,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("Should return ExpenseResponse when valid request")
     void createExpense_ShouldReturnExpenseResponse_WhenValidRequest() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(expenseRepository.save(any(Expense.class))).thenReturn(testExpense);
 
         ExpenseResponse response = expenseService.createExpense(expenseRequest);
@@ -96,7 +86,7 @@ public class ExpenseServiceImplTest {
         assertThat(response.amount()).isEqualTo(new BigDecimal("500.00"));
         assertThat(response.category()).isEqualTo(ExpenseCategory.FOOD);
 
-        verify(authenticationUtils).getCurrentUser();
+        verify(authenticationUtils).getCurrentUserId();
         verify(expenseRepository).save(any(Expense.class));
         verify(expenseEventProducer).publishExpenseCreated(any(ExpenseCreatedEvent.class));
     }
@@ -106,7 +96,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("Should return ExpenseResponse when expense exists with given id")
     void getExpenseById_ShouldReturnExpenseResponse_WhenExpenseExists() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(expenseRepository.findByIdAndUserId(1L, 1L))
                 .thenReturn(Optional.of(testExpense));
 
@@ -125,7 +115,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("Should throw ExpenseNotFoundException when expense id does not exist")
     void getExpenseById_ShouldThrowExpenseNotFoundException_WhenNotFound() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(expenseRepository.findByIdAndUserId(2L, 1L))
                 .thenReturn(Optional.empty());
 
@@ -142,7 +132,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("should return paged response with expenses when expenses exist")
     void getAllExpensesPaged_ShouldReturnPagedResponse_WhenExpensesExist() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         Page<Expense> expensePage = new PageImpl<>(
                 List.of(testExpense),
@@ -170,7 +160,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("should return empty paged response when no expenses exist")
     void getAllExpensesPaged_ShouldReturnEmptyPagedResponse_WhenNoExpensesExist() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
         Page<Expense> emptyPage = new PageImpl<>(
                 List.of(),
@@ -197,7 +187,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("Should return updated ExpenseResponse when expense exists")
     void updateExpense_ShouldReturnUpdatedExpenseResponse_WhenExpenseExists() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(expenseRepository.findByIdAndUserId(1L, 1L))
                 .thenReturn(Optional.of(testExpense));
         when(expenseRepository.save(any(Expense.class)))
@@ -218,7 +208,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("Should throw ExpenseNotFoundException when expense not found for update")
     void updateExpense_ShouldThrowExpenseNotFoundException_WhenNotFound() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(expenseRepository.findByIdAndUserId(2L, 1L))
                 .thenReturn(Optional.empty());
 
@@ -235,7 +225,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("Should delete expense when expense exists")
     void deleteExpense_ShouldDeleteExpense_WhenExpenseExists() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(expenseRepository.findByIdAndUserId(1L, 1L))
                 .thenReturn(Optional.of(testExpense));
 
@@ -248,7 +238,7 @@ public class ExpenseServiceImplTest {
     @DisplayName("Should throw ExpenseNotFoundException when expense not found for delete")
     void deleteExpense_ShouldThrowExpenseNotFoundException_WhenNotFound() {
 
-        when(authenticationUtils.getCurrentUser()).thenReturn(testUser);
+        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
         when(expenseRepository.findByIdAndUserId(2L, 1L))
                 .thenReturn(Optional.empty());
 

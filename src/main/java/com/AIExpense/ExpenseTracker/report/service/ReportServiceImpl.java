@@ -7,7 +7,6 @@ import com.AIExpense.ExpenseTracker.expense.entity.Expense;
 import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
 import com.AIExpense.ExpenseTracker.report.dto.*;
-import com.AIExpense.ExpenseTracker.user.entity.User;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -37,23 +36,23 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "monthlySummary", key = "#month + '-' + #year + '-' + @authenticationUtils.getCurrentUser().id")
+    @Cacheable(value = "monthlySummary", key = "#month + '-' + #year + '-' + @authenticationUtils.getCurrentUserId()")
     public MonthlySummaryResponse getMonthlySummary(int month, int year) {
 
         log.info("Getting monthly summary for month: {} year: {}", month, year);
 
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
 
-        BigDecimal totalSpent = expenseRepository.getTotalSpentByMonth(user.getId(), month, year);
+        BigDecimal totalSpent = expenseRepository.getTotalSpentByMonth(userId, month, year);
 
         if (totalSpent == null) {
             totalSpent = BigDecimal.ZERO;
         }
 
-        int totalTransactions = expenseRepository.countTransactionsByMonth(user.getId(), month, year);
+        int totalTransactions = expenseRepository.countTransactionsByMonth(userId, month, year);
 
         BigDecimal highestExpense = expenseRepository
-                .getHighestExpenseByMonth(user.getId(), month, year);
+                .getHighestExpenseByMonth(userId, month, year);
         if (highestExpense == null) {
             highestExpense = BigDecimal.ZERO;
         }
@@ -65,7 +64,7 @@ public class ReportServiceImpl implements ReportService {
 
 
         List<Object[]> categoryData = expenseRepository
-                .getSpendingByCategoryForMonth(user.getId(), month, year);
+                .getSpendingByCategoryForMonth(userId, month, year);
 
         String highestSpendingCategory = categoryData.stream()
                 .findFirst()
@@ -101,17 +100,17 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "categorySummary", key = "#category + '-' + #month + '-' + #year + '-' + @authenticationUtils.getCurrentUser().id")
+    @Cacheable(value = "categorySummary", key = "#category + '-' + #month + '-' + #year + '-' + @authenticationUtils.getCurrentUserId()")
     public CategorySummaryResponse getCategorySummary(ExpenseCategory category, int month, int year) {
 
         log.info("Getting Category summary for: {} for month: {} year: {}",
                 category, month, year);
 
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
 
         List<Expense> expenses = expenseRepository
                 .findByCategoryAndUserIdAndMonthAndYear(
-                        category, user.getId(), month, year);
+                        category, userId, month, year);
 
         if (expenses == null) expenses = List.of();
 
@@ -122,7 +121,7 @@ public class ReportServiceImpl implements ReportService {
         int totalTransactions = expenses.size();
 
         Optional<Budget> budget = budgetRepository
-                .findActiveBudget(user.getId(), category, month, year);
+                .findActiveBudget(userId, category, month, year);
 
         BigDecimal budgetLimit = budget
                 .map(Budget::getMonthlyLimit)
@@ -158,16 +157,16 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "topSpendingCategories", key = "#month + '-' + #year + '-' + #limit + '-' + @authenticationUtils.getCurrentUser().id")
+    @Cacheable(value = "topSpendingCategories", key = "#month + '-' + #year + '-' + #limit + '-' + @authenticationUtils.getCurrentUserId()")
     public List<TopSpendingCategoryResponse> getTopSpendingCategories(int month, int year, int limit) {
 
         log.info("Getting top {} spending categories for month: {} year: {}",
                 limit, month, year);
 
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
 
         List<Object[]> categoryData = expenseRepository
-                .getSpendingByCategoryForMonth(user.getId(), month, year);
+                .getSpendingByCategoryForMonth(userId, month, year);
 
         if (categoryData.isEmpty()) {
             return List.of();
@@ -205,19 +204,19 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "budgetRemaining", key = "#month + '-' + #year + '-' + @authenticationUtils.getCurrentUser().id")
+    @Cacheable(value = "budgetRemaining", key = "#month + '-' + #year + '-' + @authenticationUtils.getCurrentUserId()")
     public List<BudgetRemainingResponse> getBudgetRemaining(int month, int year) {
 
         log.info("Getting Budget remaining for each category for month: {} year: {}",
                 month, year);
 
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
 
         List<Object[]> categoryData = expenseRepository
-                .getSpendingByCategoryForMonth(user.getId(), month, year);
+                .getSpendingByCategoryForMonth(userId, month, year);
 
         List<Budget> budgetList = budgetRepository
-                .findAllByUserIdAndMonthAndYear(user.getId(), month, year);
+                .findAllByUserIdAndMonthAndYear(userId, month, year);
 
         if (categoryData.isEmpty() && budgetList.isEmpty()) {
             return List.of();
@@ -282,12 +281,12 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "monthlyTrend", key = "#months + '-' + @authenticationUtils.getCurrentUser().id")
+    @Cacheable(value = "monthlyTrend", key = "#months + '-' + @authenticationUtils.getCurrentUserId()")
     public List<MonthlyTrendResponse> getMonthlyTrend(int months) {
 
         log.info("Getting monthly trend for last {} months", months);
 
-        User user = authenticationUtils.getCurrentUser();
+        Long userId = authenticationUtils.getCurrentUserId();
 
         // Calculate start date based on number of months requested
         LocalDate startDate = LocalDate.now()
@@ -295,7 +294,7 @@ public class ReportServiceImpl implements ReportService {
                 .withDayOfMonth(1);
 
         List<Object[]> trendData = expenseRepository
-                .getMonthlyTrend(user.getId(), startDate);
+                .getMonthlyTrend(userId, startDate);
 
         if (trendData.isEmpty()) {
             return List.of();
