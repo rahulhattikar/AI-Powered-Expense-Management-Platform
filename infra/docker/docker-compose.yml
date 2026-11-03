@@ -77,6 +77,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
+      start_period: 60s
     networks:
       - expense-tracker-net
 
@@ -104,6 +105,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_service_db
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_JWT_SECRET: ${JWT_SECRET}
       SPRING_JWT_EXPIRATION_MS: ${JWT_EXPIRATION}
       SPRING_JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION}
@@ -118,6 +120,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      kafka:
+        condition: service_started
+      kafka-init:
+        condition: service_completed_successfully
     networks:
       - expense-tracker-net
     healthcheck:
@@ -129,6 +135,41 @@ services:
 
     restart: unless-stopped
 
+
+  expense-service:
+    build:
+      context: ../../services/expense-service
+      dockerfile: Dockerfile
+    container_name: expense-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/expense_service_db
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_JWT_SECRET: ${JWT_SECRET}
+      SPRING_JWT_EXPIRATION_MS: ${JWT_EXPIRATION}
+      SPRING_JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TZ: Asia/Kolkata
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/api/v1/expenses/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - expense-tracker-net
+
   notification-service:
     build:
       context: ../../services/notification-service
@@ -137,10 +178,15 @@ services:
       - .env
     container_name: notification-service
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notification_service_db
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_APP_PASSWORD: ${MAIL_PASSWORD}
     depends_on:
+      postgres:
+        condition: service_healthy
       kafka:
         condition: service_healthy
       kafka-init:
@@ -161,6 +207,7 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      EXPENSE_SERVICE_URL: ${EXPENSE_SERVICE_URL:-http://expense-service:8083}
 
       TZ: Asia/Kolkata
       SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: Asia/Kolkata
