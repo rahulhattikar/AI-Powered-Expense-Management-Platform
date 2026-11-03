@@ -7,11 +7,12 @@ import com.AIExpense.ExpenseTracker.budget.dto.BudgetStatusResponse;
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.budget.mapper.BudgetMapper;
 import com.AIExpense.ExpenseTracker.budget.repository.BudgetRepository;
+import com.AIExpense.ExpenseTracker.client.ExpenseServiceClient;
 import com.AIExpense.ExpenseTracker.common.exception.BudgetAlreadyExistsException;
 import com.AIExpense.ExpenseTracker.common.exception.BudgetNotFoundException;
 import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
-import com.AIExpense.ExpenseTracker.expense.service.ExpenseService;
+import com.AIExpense.ExpenseTracker.dto.CategoryTotalResponse;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import com.AIExpense.ExpenseTracker.util.CacheNames;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class BudgetServiceImpl implements BudgetService {
 
     private final BudgetRepository budgetRepository;
 
-    private final ExpenseService expenseService;
+    private final ExpenseServiceClient expenseServiceClient;
 
     private final AuthenticationUtils authenticationUtils;
 
@@ -45,16 +46,16 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional
     @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
-            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND}, allEntries = true)
     public BudgetResponse createBudget(BudgetRequest budgetRequest) {
         log.info("Creating budget for category: {}", budgetRequest.category());
         Long userId = authenticationUtils.getCurrentUserId();
 
-       if ( budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(userId,
-                budgetRequest.category(), budgetRequest.month(), budgetRequest.year())){
-           throw new BudgetAlreadyExistsException("Budget already exists for category: " + budgetRequest.category() +
-                   " month: " + budgetRequest.month() +
-                   " year: " + budgetRequest.year());
+        if (budgetRepository.existsByUserIdAndCategoryAndMonthAndYear(userId,
+                budgetRequest.category(), budgetRequest.month(), budgetRequest.year())) {
+            throw new BudgetAlreadyExistsException("Budget already exists for category: " + budgetRequest.category() +
+                    " month: " + budgetRequest.month() +
+                    " year: " + budgetRequest.year());
         }
 
         Budget budget = Budget.builder()
@@ -70,7 +71,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional
     @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
-            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND}, allEntries = true)
     public BudgetResponse updateBudget(Long id, BudgetRequest budgetRequest) {
         log.info("Updating budget with id {}", id);
         Long userId = authenticationUtils.getCurrentUserId();
@@ -85,7 +86,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional
     @CacheEvict(value = {CacheNames.MONTHLY_SUMMARY, CacheNames.CATEGORY_SUMMARY, CacheNames.TOP_SPENDING_CATEGORIES,
-            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND},allEntries = true)
+            CacheNames.BUDGET_REMAINING, CacheNames.MONTHLY_TREND}, allEntries = true)
     public void deleteBudget(Long id) {
         log.info("Deleting budget with id: {}", id);
         Long userId = authenticationUtils.getCurrentUserId();
@@ -203,16 +204,27 @@ public class BudgetServiceImpl implements BudgetService {
     @Transactional(readOnly = true)
     public BudgetStatusResponse getBudgetStatus(ExpenseCategory category, int month, int year) {
         log.info("Getting budget status for category: {} month: {} year: {}", category, month, year);
+
         Long userId = authenticationUtils.getCurrentUserId();
-        Budget budget = budgetRepository
+        String token = authenticationUtils.getTokenFromRequest();
+
+                Budget budget = budgetRepository
                 .findActiveBudget(userId, category, month, year)
                 .orElseThrow(() -> new BudgetNotFoundException(
                         "No budget found for category: " + category
                                 + " month: " + month
                                 + " year: " + year));
 
-        BigDecimal actualSpending = expenseService.getTotalSpendingByCategory(category);
+        CategoryTotalResponse categoryTotal = expenseServiceClient.getCategoryTotal(
+                category.toString(), "Bearer " + token);
+
+
+        BigDecimal actualSpending = categoryTotal != null ?
+                categoryTotal.getTotalAmount() :
+                BigDecimal.ZERO;
+
         BigDecimal remainingAmount = budget.getMonthlyLimit().subtract(actualSpending);
+
         String status = actualSpending.compareTo(budget.getMonthlyLimit()) > 0
                 ? "EXCEEDED"
                 : "WITHIN_BUDGET";
