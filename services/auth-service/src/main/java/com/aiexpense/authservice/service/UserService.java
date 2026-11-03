@@ -5,6 +5,7 @@ import com.aiexpense.authservice.dto.LoginRequest;
 import com.aiexpense.authservice.dto.RegisterRequest;
 import com.aiexpense.authservice.dto.UserDTO;
 import com.aiexpense.authservice.entity.User;
+import com.aiexpense.authservice.event.UserRegisteredEvent;
 import com.aiexpense.authservice.exception.InvalidCredentialsException;
 import com.aiexpense.authservice.exception.UserAlreadyExistsException;
 import com.aiexpense.authservice.exception.UserNotFoundException;
@@ -13,6 +14,7 @@ import com.aiexpense.authservice.util.JwtUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,8 @@ public class UserService {
     private final JwtUtils jwtUtils;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
     @Transactional
@@ -71,6 +75,13 @@ public class UserService {
         User savedUser = userRepository.save(user);
         log.info("New user registered: id={}, username={}, email={}",
                 user.getId(), user.getUsername(), user.getEmail());
+
+        kafkaTemplate.send(
+                "user-events",
+                String.valueOf(savedUser.getId()),
+                new UserRegisteredEvent("USER_REGISTERED", savedUser.getId(),
+                        savedUser.getEmail(), savedUser.getUsername())
+        );
 
         String accessToken = jwtUtils.generateAccessToken(savedUser.getId(),
                 user.getUsername(), user.getEmail());
