@@ -1,19 +1,20 @@
-package com.AIExpense.ExpenseTracker.expense.dto;
+package com.AIExpense.ExpenseTracker.dto;
 
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Builder
 public record ExpenseResponse(
         Long id,
+        Long userId,
         BigDecimal amount,
         String description,
-        ExpenseCategory category,
+        String category,
         LocalDate expenseDate,
-        Long userId,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
-) {
-}
+) {}

@@ -1,4 +1,4 @@
-package com.AIExpense.ExpenseTracker.expense.entity;
+package com.AIExpense.ExpenseTracker.entity;
 
 public enum ExpenseCategory {
 
