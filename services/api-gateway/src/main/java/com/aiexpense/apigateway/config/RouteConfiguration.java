@@ -64,8 +64,7 @@ public class RouteConfiguration {
     public RouterFunction<ServerResponse> appServiceRoute() {
         return route("app-service")
                 .route(
-                        path("/api/v1/expenses/**")
-                                .or(path("/api/v1/budgets/**"))
+                        path("/api/v1/budgets/**")
                                 .or(path("/api/v1/reports/**")),
                         http()
                 )
@@ -79,6 +78,15 @@ public class RouteConfiguration {
         return route("ai-service")
                 .route(path("/api/v1/ai/**"), http())
                 .before(uri("http://ai-service:8082"))
+                .filter(jwtValidationFilter)
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> expenseServiceRoute() {
+        return route("expense-service")
+                .route(path("/api/v1/expenses/**"), http())
+                .before(uri("http://expense-service:8083"))
                 .filter(jwtValidationFilter)
                 .build();
     }
