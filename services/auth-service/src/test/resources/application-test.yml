@@ -7,15 +7,19 @@ spring:
 
 
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
     username: sa
     password:
-    initialization-mode: always
+
+  sql:
+    init:
+      mode: always
 
   jpa:
     hibernate:
       ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
     show-sql: false
     properties:
       hibernate:
@@ -41,9 +45,9 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
-  logging:
-    level:
-      root: WARN
-      com.aiexpense.authservice: INFO
-      org.springframework.test: INFO
-      org.springframework.security: DEBUG
+logging:
+  level:
+    root: WARN
+    com.aiexpense.authservice: INFO
+    org.springframework.test: INFO
+    org.springframework.security: DEBUG
