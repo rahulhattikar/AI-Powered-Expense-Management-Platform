@@ -15,6 +15,6 @@ public class AuthenticationUtils {
         if (authentication == null || authentication.getPrincipal() == null) {
             throw new IllegalStateException("No authenticated user in context");
         }
-        return (Long) authentication.getPrincipal();
+        return Long.valueOf(authentication.getName());
     }
 }

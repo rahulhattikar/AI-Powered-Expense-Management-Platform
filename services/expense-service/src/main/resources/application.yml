@@ -34,7 +34,7 @@ spring:
         timeout: 60000ms
 
     kafka:
-      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       producer:
         key-serializer: org.apache.kafka.common.serialization.StringSerializer
         value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -49,10 +49,10 @@ spring:
           spring.json.use.type.headers: false
           spring.json.value.default.type: com.aiexpense.expenseservice.event.ExpenseEvent
 
-jwt:
-  secret: ${SPRING_JWT_SECRET}
-  expiration-ms: ${SPRING_JWT_EXPIRATION_MS:86400000}
-  refresh-expiration-ms: ${SPRING_JWT_REFRESH_EXPIRATION_MS}
+    jwt:
+      secret: ${SPRING_JWT_SECRET:}
+      expiration-ms: ${SPRING_JWT_EXPIRATION_MS:86400000}
+      refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000}
 
 logging:
   level:
