@@ -6,6 +6,7 @@ import com.aiexpense.expenseservice.dto.ExpenseResponse;
 import com.aiexpense.expenseservice.dto.PagedResult;
 import com.aiexpense.expenseservice.entity.Expense;
 import com.aiexpense.expenseservice.entity.ExpenseCategory;
+import com.aiexpense.expenseservice.event.ExpenseEvent;
 import com.aiexpense.expenseservice.event.ExpenseEventProducer;
 import com.aiexpense.expenseservice.exception.ExpenseNotFoundException;
 import com.aiexpense.expenseservice.repository.ExpenseRepository;
@@ -18,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,6 +44,9 @@ class ExpenseServiceImplTest {
 
     @InjectMocks
     private ExpenseServiceImpl expenseService;
+
+    @MockitoBean
+    private KafkaTemplate<String, ExpenseEvent> kafkaTemplate;
 
     private Long userId = 1L;
     private CreateExpenseRequest createRequest;

@@ -32,10 +32,6 @@ public class KafkaConfig {
         );
     }
 
-//    @Bean
-//    public NewTopic expenseEventsTopic() {
-//        return new NewTopic("expense-events", 3, (short) 1);
-//    }
 
 
     @Bean
@@ -58,7 +54,5 @@ public class KafkaConfig {
     public NewTopic expenseEventsTopic() {
         return TopicBuilder.name("expense-events").partitions(3).replicas(1).build();
     }
-
-
 
 }

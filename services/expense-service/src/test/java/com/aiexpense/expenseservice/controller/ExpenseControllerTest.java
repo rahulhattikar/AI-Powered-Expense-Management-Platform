@@ -1,27 +1,31 @@
 package com.aiexpense.expenseservice.controller;
 
 import com.aiexpense.expenseservice.dto.CreateExpenseRequest;
+import com.aiexpense.expenseservice.event.ExpenseEventProducer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
+@ImportAutoConfiguration(exclude = KafkaAutoConfiguration.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@EnableAutoConfiguration(exclude = {KafkaAutoConfiguration.class})
 class ExpenseControllerTest {
 
     @Autowired
@@ -30,10 +34,12 @@ class ExpenseControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockitoBean
+    private ExpenseEventProducer expenseEventProducer;
 
-    private static final String TEST_JWT = "Bearer eyJhbGc...";
 
     @Test
+    @WithMockUser(username = "1")
     void testCreateExpense_Success() throws Exception {
         CreateExpenseRequest request = CreateExpenseRequest.builder()
                 .description("Lunch")
@@ -43,7 +49,6 @@ class ExpenseControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/expenses")
-                        .header("Authorization", TEST_JWT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -52,9 +57,12 @@ class ExpenseControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "1")
     void testGetAllExpenses_WithPagination() throws Exception {
-        mockMvc.perform(get("/api/v1/expenses?page=0&size=20")
-                        .header("Authorization", TEST_JWT))
+        mockMvc.perform(get("/api/v1/expenses")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").exists())
                 .andExpect(jsonPath("$.content").isArray());
