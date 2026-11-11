@@ -8,6 +8,9 @@ spring:
     hibernate:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
 
   jwt:
     secret: dGVzdC1zZWNyZXQtZm9yLXVuaXQtdGVzdHMtb25seS0yNTYtYml0cy1sb25nLWtleQ==
