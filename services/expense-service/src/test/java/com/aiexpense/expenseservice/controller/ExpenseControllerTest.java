@@ -1,6 +1,5 @@
 package com.aiexpense.expenseservice.controller;
 
-import com.aiexpense.expenseservice.config.TestCacheConfig;
 import com.aiexpense.expenseservice.dto.CreateExpenseRequest;
 import com.aiexpense.expenseservice.event.ExpenseEventProducer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +9,6 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
