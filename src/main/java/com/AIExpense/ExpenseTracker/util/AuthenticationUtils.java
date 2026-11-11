@@ -128,4 +128,34 @@ public class AuthenticationUtils {
         }
     }
 
+
+    public String getTokenFromRequest() {
+
+        ServletRequestAttributes attributes =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+
+        if (attributes == null) {
+            throw new InvalidTokenException("No request context found");
+        }
+
+        HttpServletRequest request = attributes.getRequest();
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || authHeader.isBlank()) {
+            throw new InvalidTokenException("Missing Authorization header");
+        }
+
+        if (!authHeader.startsWith("Bearer ")) {
+            throw new InvalidTokenException("Authorization header must start with 'Bearer '");
+        }
+
+        String token = authHeader.substring(7);
+
+        if (token.isBlank()) {
+            throw new InvalidTokenException("Bearer token is empty");
+        }
+
+        return token;
+    }
+
 }

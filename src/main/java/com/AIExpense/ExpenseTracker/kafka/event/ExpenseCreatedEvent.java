@@ -1,6 +1,6 @@
 package com.AIExpense.ExpenseTracker.kafka.event;
 
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

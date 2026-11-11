@@ -15,5 +15,12 @@ echo "Creating Kafka topics..."
   --partitions 1 \
   --replication-factor 1
 
+
+/opt/kafka/bin/kafka-topics.sh --create --if-not-exists \
+  --topic user-events \
+  --bootstrap-server kafka:9092 \
+  --partitions 1 \
+  --replication-factor 1
+
 echo "Topics created successfully"
 /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server kafka:9092

@@ -5,7 +5,7 @@ import com.AIExpense.ExpenseTracker.budget.dto.BudgetRequest;
 import com.AIExpense.ExpenseTracker.budget.dto.BudgetResponse;
 import com.AIExpense.ExpenseTracker.budget.dto.BudgetStatusResponse;
 import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 
 import java.util.List;
 
