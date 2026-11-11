@@ -1,7 +1,7 @@
 package com.AIExpense.ExpenseTracker.budget.entity;
 
 
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,9 +27,9 @@ public class Budget {
     private ExpenseCategory category;
     @Column(name = "monthly_limit", nullable = false, precision = 10, scale = 2)
     private BigDecimal monthlyLimit;
-    @Column(nullable = false)
+    @Column(name = "budget_month", nullable = false)
     private int month;
-    @Column(nullable = false)
+    @Column(name = "budget_year", nullable = false)
     private int year;
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

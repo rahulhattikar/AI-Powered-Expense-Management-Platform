@@ -1,6 +1,8 @@
 package com.aiexpense.notificationservice.consumer;
 
+import com.aiexpense.notificationservice.entity.NotificationRecipient;
 import com.aiexpense.notificationservice.event.BudgetAlertEvent;
+import com.aiexpense.notificationservice.repository.NotificationRecipientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,16 +18,27 @@ public class EmailNotificationConsumer {
 
     private final JavaMailSender mailSender;
 
+    private final NotificationRecipientRepository recipientRepository;
+
     @Value("${spring.mail.username}")
     private String senderEmail;
 
-    @KafkaListener(
-            topics = "budget-alert",
-            groupId = "email-notification-group"
-    )
+    @KafkaListener(topics = "budget-alert",
+            groupId = "email-notification-group",
+            containerFactory = "budgetAlertListenerFactory")
     public void handleBudgetAlert(BudgetAlertEvent event) {
         log.info("[notification-service] Received BudgetAlertEvent for userId: {} category: {}",
                 event.userId(), event.category());
+
+        String recipient = recipientRepository.findById(event.userId())
+                .map(NotificationRecipient::getEmail)
+                .orElse(null);
+
+        if (recipient == null) {
+            log.warn("[notification-service] No email stored yet for userId: {}, alert skipped",
+                    event.userId());
+            return;
+        }
 
         String subject = String.format("Budget Alert: %s exceeded by %s",
                 event.category(), event.exceededBy());
@@ -42,14 +55,14 @@ public class EmailNotificationConsumer {
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(senderEmail);
-        message.setTo(event.userEmail());
+        message.setTo(recipient);
         message.setSubject(subject);
         message.setText(body);
 
         try {
             mailSender.send(message);
             log.info("[notification-service] Budget alert email sent successfully to {} for category {}",
-                    event.userEmail(), event.category());
+                    recipient, event.category());
         } catch (Exception e) {
             log.error("[notification-service] Failed to send budget alert email for userId: {} - {}",
                     event.userId(), e.getMessage());

@@ -1,10 +1,13 @@
 package com.AIExpense.ExpenseTracker.report.service;
 
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
-import com.AIExpense.ExpenseTracker.report.dto.*;
-import org.jspecify.annotations.Nullable;
+import com.AIExpense.ExpenseTracker.report.dto.MonthlySummaryResponse;
+import com.AIExpense.ExpenseTracker.report.dto.BudgetRemainingResponse;
+import com.AIExpense.ExpenseTracker.report.dto.CategorySummaryResponse;
+import com.AIExpense.ExpenseTracker.report.dto.MonthlyTrendResponse;
+import com.AIExpense.ExpenseTracker.report.dto.TopSpendingCategoryResponse;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 
-import java.math.BigDecimal;
+
 import java.util.List;
 
 public interface ReportService {

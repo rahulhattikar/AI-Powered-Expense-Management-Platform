@@ -1,7 +1,7 @@
 package com.AIExpense.ExpenseTracker.report.controller;
 
 
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.report.dto.*;
 import com.AIExpense.ExpenseTracker.report.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,7 +1,8 @@
 package com.AIExpense.ExpenseTracker.budget.repository;
 
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

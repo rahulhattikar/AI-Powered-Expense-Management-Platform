@@ -6,7 +6,7 @@ import com.AIExpense.ExpenseTracker.budget.dto.BudgetResponse;
 import com.AIExpense.ExpenseTracker.budget.dto.BudgetStatusResponse;
 import com.AIExpense.ExpenseTracker.budget.service.BudgetService;
 import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

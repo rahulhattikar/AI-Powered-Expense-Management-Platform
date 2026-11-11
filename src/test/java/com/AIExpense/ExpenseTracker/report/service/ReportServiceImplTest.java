@@ -2,9 +2,9 @@ package com.AIExpense.ExpenseTracker.report.service;
 
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.budget.repository.BudgetRepository;
-import com.AIExpense.ExpenseTracker.expense.entity.Expense;
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
-import com.AIExpense.ExpenseTracker.expense.repository.ExpenseRepository;
+import com.AIExpense.ExpenseTracker.client.ExpenseServiceClient;
+import com.AIExpense.ExpenseTracker.dto.ExpenseResponse;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.report.dto.*;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import org.assertj.core.api.Assertions;
@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +30,7 @@ import static org.mockito.Mockito.when;
 class ReportServiceImplTest {
 
     @Mock
-    private ExpenseRepository expenseRepository;
+    private ExpenseServiceClient expenseServiceClient;
 
     @Mock
     private BudgetRepository budgetRepository;
@@ -39,25 +38,15 @@ class ReportServiceImplTest {
     @Mock
     private AuthenticationUtils authenticationUtils;
 
+
     @InjectMocks
     private ReportServiceImpl reportService;
 
 
-    private Expense testExpense;
     private Budget testBudget;
 
     @BeforeEach
     void setUp() {
-
-
-        testExpense = Expense.builder()
-                .id(1L)
-                .userId(1L)
-                .amount(new BigDecimal("500.00"))
-                .description("Grocery shopping")
-                .category(ExpenseCategory.FOOD)
-                .expenseDate(LocalDate.of(2026, 6, 1))
-                .build();
 
         testBudget = Budget.builder()
                 .id(1L)
@@ -68,42 +57,28 @@ class ReportServiceImplTest {
                 .year(2026)
                 .build();
 
-
+        when(authenticationUtils.getTokenFromRequest()).thenReturn("token");
     }
 
     @Test
     @DisplayName("should return monthly summary with category breakdown when expenses exist")
     void getMonthlySummary_ShouldReturnSummary_WhenExpensesExist() {
 
-        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
-
-
-        List<Object[]> categoryData = List.of(
-                new Object[]{ExpenseCategory.FOOD, new BigDecimal("3000.00")},
-                new Object[]{ExpenseCategory.TRAVEL, new BigDecimal("2000.00")}
-        );
-
-        when(expenseRepository.getSpendingByCategoryForMonth(1L, 6, 2026))
-                .thenReturn(categoryData);
-
-        when(expenseRepository.getTotalSpentByMonth(1L, 6, 2026))
-                .thenReturn(new BigDecimal("5000.00"));
-
-        when(expenseRepository.countTransactionsByMonth(1L, 6, 2026))
-                .thenReturn(10);
-
-        when(expenseRepository.getHighestExpenseByMonth(1L, 6, 2026))
-                .thenReturn(new BigDecimal("1500.00"));
+        when(expenseServiceClient.getMonthlySummary(6, 2026, "Bearer token"))
+                .thenReturn(MonthlySummaryResponse.builder()
+                        .totalSpent(new BigDecimal("5000.00"))
+                        .totalTransactions(10)
+                        .highestExpense(new BigDecimal("1500.00"))
+                        .build());
 
 
         MonthlySummaryResponse response = reportService.getMonthlySummary(6, 2026);
 
 
         assertThat(response).isNotNull();
-        assertThat(response.totalSpent()).isEqualTo(new BigDecimal("5000.00"));
-        assertThat(response.totalTransactions()).isEqualTo(10);
-        assertThat(response.highestExpense()).isEqualTo(new BigDecimal("1500.00"));
-        Assertions.assertThat(response.categoryBreakdown()).hasSize(2);
+        assertThat(response.getTotalSpent()).isEqualTo(new BigDecimal("5000.00"));
+        assertThat(response.getTotalTransactions()).isEqualTo(10);
+        assertThat(response.getHighestExpense()).isEqualTo(new BigDecimal("1500.00"));
     }
 
     @Test
@@ -111,11 +86,20 @@ class ReportServiceImplTest {
     void getCategorySummary_ShouldReturnNoBudgetStatus_WhenBudgetNotSet() {
 
         when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
+        when(authenticationUtils.getTokenFromRequest()).thenReturn("token");
 
-        List<Expense> expenses = List.of(testExpense);
-        when(expenseRepository.findByCategoryAndUserIdAndMonthAndYear(
-                ExpenseCategory.FOOD, 1L, 6, 2026))
-                .thenReturn(expenses);
+        when(expenseServiceClient.getExpensesByMonthAndCategory("FOOD", 6, 2026, "Bearer token"))
+                .thenReturn(List.of(
+                       ExpenseResponse.builder()
+                               .id(1L)
+                               .amount(new BigDecimal("3000.00"))
+                               .category(ExpenseCategory.FOOD.toString())
+                               .description("Groceries")
+                               .expenseDate(LocalDate.of(2026, 6, 15))
+                               .build()
+
+                ));
+
 
         when(budgetRepository.findActiveBudget(1L, ExpenseCategory.FOOD, 6, 2026))
                 .thenReturn(Optional.empty());
@@ -124,30 +108,39 @@ class ReportServiceImplTest {
                 .getCategorySummary(ExpenseCategory.FOOD, 6, 2026);
 
         assertThat(response.status()).isEqualTo("NO_BUDGET");
-        assertThat(response.budgetLimit()).isEqualTo(BigDecimal.ZERO);
+        assertThat(response.budgetLimit()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
     @DisplayName("should return trend with percentage change when data exists for multiple months")
     void getMonthlyTrend_ShouldReturnTrendWithPercentageChange_WhenDataExistsForMultipleMonths() {
 
-        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
-        List<Object[]> trendData = List.of(
-                new Object[]{1, 2026, new BigDecimal("10000.00"), 15L},
-                new Object[]{2, 2026, new BigDecimal("12000.00"), 18L}
-        );
-        when(expenseRepository.getMonthlyTrend(eq(1L), any(LocalDate.class)))
-                .thenReturn(trendData);
-
+        when(expenseServiceClient.getMonthlyTrend(anyString(),eq("Bearer token")))
+                .thenReturn(List.of(
+                        MonthlyTrendResponse.builder()
+                                .month(1)
+                                .year(2026)
+                                .totalSpent(new BigDecimal("10000.00"))
+                                .totalTransactions(15)
+                                .changePercentage(0.0)
+                                .build(),
+                        MonthlyTrendResponse.builder()
+                                .month(2)
+                                .year(2026)
+                                .totalSpent(new BigDecimal("12000.00"))
+                                .totalTransactions(18)
+                                .changeFromLastMonth(new BigDecimal("2000.00"))
+                                .build()
+                ));
 
         List<MonthlyTrendResponse> response = reportService.getMonthlyTrend(2);
 
 
         Assertions.assertThat(response).hasSize(2);
-        assertThat(response.get(0).changePercentage()).isEqualTo(0.0); // first month
-        assertThat(response.get(1).changeFromLastMonth())
-                .isEqualTo(new BigDecimal("2000.00")); // 12000 - 10000
+        assertThat(response.get(0).getChangePercentage()).isEqualTo(0.0); // first month
+        assertThat(response.get(1).getChangeFromLastMonth())
+                .isEqualByComparingTo(new BigDecimal("2000.00")); // 12000 - 10000
     }
 
 
@@ -155,38 +148,29 @@ class ReportServiceImplTest {
     @DisplayName("should return zero values when no expenses exist")
     void getMonthlySummary_ShouldReturnZeroValues_WhenNoExpensesExist() {
 
-        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
-        when(expenseRepository.getTotalSpentByMonth(1L,3,2026))
-                .thenReturn(BigDecimal.ZERO);
-
-        when(expenseRepository.getSpendingByCategoryForMonth(1L, 3, 2026))
-                .thenReturn(List.of());
-
-        when(expenseRepository.countTransactionsByMonth(1L, 3, 2026))
-                .thenReturn(0);
-
-        when(expenseRepository.getHighestExpenseByMonth(1L, 3, 2026))
-                .thenReturn(BigDecimal.ZERO);
+        when(expenseServiceClient.getMonthlySummary(3, 2026, "Bearer token"))
+                .thenReturn(MonthlySummaryResponse.builder()
+                        .totalSpent(BigDecimal.ZERO)
+                        .totalTransactions(0)
+                        .highestExpense(BigDecimal.ZERO)
+                        .build());
 
 
         MonthlySummaryResponse response = reportService.getMonthlySummary(3, 2026);
 
         Assertions.assertThat(response).isNotNull();
 
-        Assertions.assertThat(response.categoryBreakdown()).isEmpty();
-
         assertThat(response).isNotNull();
-        assertThat(response.totalSpent()).isEqualTo(BigDecimal.ZERO);
-        assertThat(response.totalTransactions()).isEqualTo(0);
-        assertThat(response.highestExpense()).isEqualTo(BigDecimal.ZERO);
-        assertThat(response.averagePerDay()).isEqualTo(BigDecimal.ZERO);
-        Assertions.assertThat(response.categoryBreakdown()).isEmpty();
+        assertThat(response.getTotalSpent()).isEqualTo(BigDecimal.ZERO);
+        assertThat(response.getTotalTransactions()).isEqualTo(0);
+        assertThat(response.getHighestExpense()).isEqualTo(BigDecimal.ZERO);
+        assertThat(response.getAveragePerDay()).isEqualTo(BigDecimal.ZERO);
 
-        verify(expenseRepository).getTotalSpentByMonth(1L, 3, 2026);
-        verify(expenseRepository).getSpendingByCategoryForMonth(1L, 3, 2026);
-        verify(expenseRepository).countTransactionsByMonth(1L, 3, 2026);
-        verify(expenseRepository).getHighestExpenseByMonth(1L, 3, 2026);
+
+        verify(expenseServiceClient).getMonthlySummary(3, 2026,
+                "Bearer token");
+
 
     }
 
@@ -195,12 +179,21 @@ class ReportServiceImplTest {
    void  getCategorySummary_ShouldReturnWithinBudgetStatus_WhenSpendingBelowLimit(){
 
         when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
+        when(authenticationUtils.getTokenFromRequest()).thenReturn("token");
 
-        List<Expense> expenses = List.of(testExpense);
+        when(expenseServiceClient.getExpensesByMonthAndCategory("FOOD", 6, 2026, "Bearer token"))
+                .thenReturn(List.of(
+                       ExpenseResponse.builder()
+                                .id(1L)
+                               .amount(new BigDecimal("500.00"))
+                               .category(ExpenseCategory.FOOD.toString())
+                               .description("Groceries")
+                               .expenseDate(LocalDate.of(2026, 6, 15))
+                               .build()
 
-        when(expenseRepository.findByCategoryAndUserIdAndMonthAndYear(
-                ExpenseCategory.FOOD, 1L, 6, 2026))
-                .thenReturn(expenses);
+                ));
+
+
 
         when(budgetRepository.findActiveBudget(
                 1L, ExpenseCategory.FOOD, 6, 2026))
@@ -216,8 +209,7 @@ class ReportServiceImplTest {
         assertThat(response.totalSpent()).isEqualTo(new BigDecimal("500.00"));
         assertThat(response.remainingAmount()).isEqualTo(new BigDecimal("4500.00"));
 
-        verify(expenseRepository).findByCategoryAndUserIdAndMonthAndYear
-                (ExpenseCategory.FOOD, 1L,6,2026);
+        verify(expenseServiceClient).getExpensesByMonthAndCategory("FOOD", 6, 2026, "Bearer token");
 
         verify(budgetRepository).findActiveBudget(1L,ExpenseCategory.FOOD,6,2026);
 
@@ -228,15 +220,17 @@ class ReportServiceImplTest {
     @DisplayName("should return top spending categories when categories exists")
    void getTopSpendingCategories_ShouldReturnRankedList_WhenCategoriesExist(){
 
-        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
-
-        List<Object[]> categoryData = List.of(
-                new Object[]{ExpenseCategory.FOOD, new BigDecimal("3000.00")},
-                new Object[]{ExpenseCategory.TRAVEL, new BigDecimal("2000.00")}
-        );
-
-        when(expenseRepository.getSpendingByCategoryForMonth(1L, 6, 2026))
-                .thenReturn(categoryData);
+        when(expenseServiceClient.getCategoryBreakdown(6, 2026, "Bearer token"))
+                .thenReturn(List.of(
+                        CategorySpendingResponse.builder()
+                                .category("FOOD")
+                                .amount(new BigDecimal("3000.00"))
+                                .build(),
+                        CategorySpendingResponse.builder()
+                                .category("TRAVEL")
+                                .amount(new BigDecimal("2000.00"))
+                                .build()
+                ));
 
         List<TopSpendingCategoryResponse> response = reportService
                 .getTopSpendingCategories(6,2026,2);
@@ -251,16 +245,16 @@ class ReportServiceImplTest {
         assertThat(response.get(0).percentageOfTotalSpending()).isEqualTo(60.0);
         assertThat(response.get(1).percentageOfTotalSpending()).isEqualTo(40.0);
 
-        verify(expenseRepository).getSpendingByCategoryForMonth(1L, 6, 2026);
+        verify(expenseServiceClient).getCategoryBreakdown(6, 2026,
+                "Bearer token");
+
    }
 
    @Test
    @DisplayName("should return empty top spending category list")
   void getTopSpendingCategories_ShouldReturnEmptyList_WhenNoExpensesExist(){
 
-       when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
-
-       when(expenseRepository.getSpendingByCategoryForMonth(1L, 2, 2026))
+       when(expenseServiceClient.getCategoryBreakdown(2, 2026, "Bearer token"))
                .thenReturn(List.of());
 
        List<TopSpendingCategoryResponse> response = reportService
@@ -269,22 +263,27 @@ class ReportServiceImplTest {
 
        Assertions.assertThat(response).hasSize(0);
 
-       verify(expenseRepository).getSpendingByCategoryForMonth(1L, 2, 2026);
+       verify(expenseServiceClient).getCategoryBreakdown(2, 2026,
+               "Bearer token");
   }
 
   @Test
   @DisplayName("should return budget remaining for all categories when budget exists")
   void getBudgetRemaining_ShouldReturnAllCategories_WhenBudgetAndExpensesExist(){
 
-        when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
+      when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
 
-      List<Object[]> categoryData = List.of(
-              new Object[]{ExpenseCategory.FOOD, new BigDecimal("3000.00")},
-              new Object[]{ExpenseCategory.TRAVEL, new BigDecimal("2000.00")}
-      );
-
-      when(expenseRepository.getSpendingByCategoryForMonth(1L,6,2026))
-              .thenReturn(categoryData);
+      when(expenseServiceClient.getCategoryBreakdown(6, 2026, "Bearer token"))
+              .thenReturn(List.of(
+                      CategorySpendingResponse.builder()
+                              .category("FOOD")
+                              .amount(new BigDecimal("3000.00"))
+                              .build(),
+                      CategorySpendingResponse.builder()
+                              .category("TRAVEL")
+                              .amount(new BigDecimal("2000.00"))
+                              .build()
+              ));
 
       when(budgetRepository.findAllByUserIdAndMonthAndYear(1L,6,2026))
               .thenReturn(List.of(testBudget));
@@ -307,7 +306,8 @@ class ReportServiceImplTest {
       assertThat(response.get(1).utilizationPercentage()).isEqualTo(0.0);
       assertThat(response.get(1).status()).isEqualTo("NO_BUDGET");
 
-      verify(expenseRepository).getSpendingByCategoryForMonth(1L, 6, 2026);
+      verify(expenseServiceClient).getCategoryBreakdown(6, 2026,
+              "Bearer token");
       verify(budgetRepository).findAllByUserIdAndMonthAndYear(1L, 6, 2026);
 
   }

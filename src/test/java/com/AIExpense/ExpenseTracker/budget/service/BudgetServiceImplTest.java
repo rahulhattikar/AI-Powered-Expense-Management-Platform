@@ -5,11 +5,12 @@ import com.AIExpense.ExpenseTracker.budget.dto.BudgetResponse;
 import com.AIExpense.ExpenseTracker.budget.dto.BudgetStatusResponse;
 import com.AIExpense.ExpenseTracker.budget.entity.Budget;
 import com.AIExpense.ExpenseTracker.budget.repository.BudgetRepository;
+import com.AIExpense.ExpenseTracker.client.ExpenseServiceClient;
 import com.AIExpense.ExpenseTracker.common.exception.BudgetAlreadyExistsException;
 import com.AIExpense.ExpenseTracker.common.exception.BudgetNotFoundException;
 import com.AIExpense.ExpenseTracker.common.dto.PagedResponse;
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
-import com.AIExpense.ExpenseTracker.expense.service.ExpenseService;
+import com.AIExpense.ExpenseTracker.dto.CategoryTotalResponse;
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 import com.AIExpense.ExpenseTracker.util.AuthenticationUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +41,7 @@ class BudgetServiceImplTest {
     private BudgetRepository budgetRepository;
 
     @Mock
-    private ExpenseService expenseService;
+    private ExpenseServiceClient expenseServiceClient;
 
     @Mock
     private AuthenticationUtils authenticationUtils;
@@ -71,6 +72,8 @@ class BudgetServiceImplTest {
                 6,
                 2026
         );
+
+
     }
 
 
@@ -79,10 +82,14 @@ class BudgetServiceImplTest {
     void getBudgetStatus_ShouldReturnWithinBudget_WhenSpendingBelowLimit() {
 
         when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
+        when(authenticationUtils.getTokenFromRequest()).thenReturn("token");
         when(budgetRepository.findActiveBudget(1L, ExpenseCategory.FOOD, 6, 2026))
                 .thenReturn(Optional.of(testBudget));
-        when(expenseService.getTotalSpendingByCategory(ExpenseCategory.FOOD))
-                .thenReturn(new BigDecimal("3000.00")); // less than 5000 limit
+        when(expenseServiceClient.getCategoryTotal(ExpenseCategory.FOOD.toString(),
+                "Bearer token"))
+                .thenReturn(CategoryTotalResponse.builder()
+                        .totalAmount(new BigDecimal("3000.00"))
+                        .build());
 
         BudgetStatusResponse response = budgetService
                 .getBudgetStatus(ExpenseCategory.FOOD, 6, 2026);
@@ -310,10 +317,15 @@ class BudgetServiceImplTest {
     void getBudgetStatus_ShouldReturnExceeded_WhenSpendingAboveLimit() {
 
         when(authenticationUtils.getCurrentUserId()).thenReturn(1L);
+        when(authenticationUtils.getTokenFromRequest()).thenReturn("token");
         when(budgetRepository.findActiveBudget(1L, ExpenseCategory.FOOD, 6, 2026))
                 .thenReturn(Optional.of(testBudget));
-        when(expenseService.getTotalSpendingByCategory(ExpenseCategory.FOOD))
-                .thenReturn(new BigDecimal("6000.00")); // less than 5000 limit
+
+        when(expenseServiceClient.getCategoryTotal(ExpenseCategory.FOOD.toString(),
+                "Bearer token"))
+                .thenReturn(CategoryTotalResponse.builder()
+                        .totalAmount(new BigDecimal("6000.00"))
+                        .build());
 
         BudgetStatusResponse response = budgetService
                 .getBudgetStatus(ExpenseCategory.FOOD, 6, 2026);

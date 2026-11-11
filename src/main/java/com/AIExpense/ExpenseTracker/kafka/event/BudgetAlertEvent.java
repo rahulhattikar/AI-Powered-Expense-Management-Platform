@@ -1,6 +1,7 @@
 package com.AIExpense.ExpenseTracker.kafka.event;
 
-import com.AIExpense.ExpenseTracker.expense.entity.ExpenseCategory;
+
+import com.AIExpense.ExpenseTracker.entity.ExpenseCategory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 public record BudgetAlertEvent(
         Long userId,
         String userEmail,
-        ExpenseCategory category,
+        String category,
         BigDecimal budgetLimit,
         BigDecimal actualSpending,
         BigDecimal exceededBy,

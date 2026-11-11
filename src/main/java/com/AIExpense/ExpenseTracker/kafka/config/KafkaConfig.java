@@ -6,7 +6,7 @@ import org.springframework.kafka.config.TopicBuilder;
 
 public class KafkaConfig {
 
-    public static final String EXPENSE_CREATED_TOPIC = "expense-created";
+    public static final String EXPENSE_CREATED_TOPIC = "expense-events";
     public static final String BUDGET_ALERT_TOPIC = "budget-alert";
 
     @Bean
