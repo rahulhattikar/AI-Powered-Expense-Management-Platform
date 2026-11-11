@@ -24,7 +24,11 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    private Environment environment;
+    private final Environment environment;
+
+    public KafkaConsumerConfig(Environment environment) {
+        this.environment = environment;
+    }
 
     @Bean
     public ConsumerFactory<String, ExpenseEvent> consumerFactory() {
